@@ -167,18 +167,14 @@
     
     <!-- Correlation Heatmap Section -->
     <h3>Correlation Heatmap of Player Metrics</h3>
-    <p>This correlation heatmap reveals several key relationships among basketball player metrics and draft data. Players with better physical attributes, such as height and weight, are more likely to be drafted earlier, as evidenced by strong negative correlations. Offensive metrics like points per game (pts) and usage percentage (usg_pct) also show a strong positive correlation.</p>
+    <p>This correlation heatmap reveals several key relationships amongst the basketball player metrics and draft data. Players with better physical attributes, such as height and weight, are more likely to be drafted earlier, which can be seen by the strong negative correlations between player_height and draft_number (r = -0.54) and between player_weight and draft_round (r = -0.62). Offensive performance metrics, such as points per game (pts) and usage percentage (usg_pct), also show a strong positive correlation (r = 0.69), indicating that players with higher usage rates tend to score more points. Similarly, defensive metrics like defensive rebound percentage (dreb_pct) are strongly correlated with overall rebounding numbers (r = 0.65), emphasizing the contribution of defensive effort to total rebounds. The negative correlation between age and draft_year (r = -0.56) highlights that older players were typically drafted in earlier years. Also, the relationship between draft_round and draft_number (r = 0.85) gives us the expected trend that later draft rounds correspond to higher (worse) draft pick numbers. There are other, less important variables from the heatmap, such as net_rating which give minimal correlations with other variables, suggesting a weak statisitc that doesn't really give much importance to the purpose of the heatmap.</p>
     <div id="heatmap"></div>
 
     <!-- Shooting Efficiency Section -->
     <h3>Shooting Efficiency by Draft Round</h3>
-    <p>The box plot reveals that players drafted in earlier rounds generally have higher shooting percentages and greater variability in performance. Players drafted in later rounds display lower median shooting percentages.</p>
+    <p>The box plot shows the relationship between draft round and shooting efficiency (true shooting percentage ==> ts_pct), revealing that players drafted in earlier rounds generally have higher shooting percentages and greater variability in performance. Earlier rounds (ex: 1st and 2nd) exhibit a broad range of efficiencies, with many outliers suggesting that some players significantly outperform or underperform expectations. Conversely, players drafted in later rounds (ex: 6th to 8th) display lower median shooting percentages and less variability, possibly due to more specialized roles or reduced playing opportunities. Undrafted players (classified as Draft Round 0) show relatively consistent shooting efficiencies, with a narrow range of values indicating moderate success for those who secure playing time.</p>
     <div id="shootingEfficiency"></div>
 
-    <!-- Average Points Section -->
-    <h3>Average Points Scored by Players for Each Team</h3>
-    <p>The interactive bar chart compares scoring performance across NBA teams. Most team averages fall between 6 and 8 points per game, highlighting relatively balanced contributions across teams.</p>
-    <div id="averagePoints"></div>
 
     <script>
         // Correlation Heatmap
@@ -199,23 +195,20 @@
             colorscale: 'Viridis'
         }], { title: 'Correlation Heatmap of Player Metrics', xaxis: { title: 'Metrics' }, yaxis: { title: 'Metrics' } });
 
-        // Shooting Efficiency
-        Plotly.newPlot('shootingEfficiency', [{
-            x: [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4],
-            y: [0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.5, 0.55, 0.6, 0.4, 0.45, 0.5, 0.35, 0.4, 0.45],
-            type: 'box'
-        }], { title: 'Shooting Efficiency by Draft Round', xaxis: { title: 'Draft Round' }, yaxis: { title: 'Shooting Percentage' } });
-
-        Plotly.newPlot('averagePoints', [{
-            x: ['ATL', 'BOS', 'CHA', 'CHI', 'CLE', 'DAL', 'DEN', 'DET', 'GSW', 'HOU'],
-            y: [8.2, 7.5, 6.8, 7.0, 6.9, 7.3, 7.8, 6.7, 8.0, 7.1],
-            type: 'bar',
-            marker: { color: 'teal' }
-        }], {
-            title: 'Average Points Scored by Players for Each Team',
-            xaxis: { title: 'Team' },
-            yaxis: { title: 'Average Points' }
-        });
+            // Shooting Efficiency
+    Plotly.newPlot('shootingEfficiency', [{
+        x: [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4],
+        y: [0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.5, 0.55, 0.6, 0.4, 0.45, 0.5, 0.35, 0.4, 0.45],
+        type: 'box'
+    }], {
+        title: 'Shooting Efficiency by Draft Round',
+        xaxis: {
+            title: 'Draft Round',
+            tickvals: [0, 1, 2, 3, 4], // Numeric values for positions
+            ticktext: ['Undrafted', '1', '2', '3', '4'] // Custom labels
+        },
+        yaxis: { title: 'Shooting Percentage' }
+    });
     </script>
 
   <h3>Team Comparison</h3>
