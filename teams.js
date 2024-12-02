@@ -4,7 +4,7 @@ d3.csv(csvFilePath).then(data => {
   // Step 1: Preprocess the data
   const processedData = data.map(d => ({
     season: d.season,
-    team_abbreviation: d.team_abbreviation,
+    team_abbreviation: d.team_abbreviation.trim(), // Ensure no extra spaces
     pts: +d.pts,
     reb: +d.reb,
     ast: +d.ast
@@ -64,7 +64,7 @@ d3.csv(csvFilePath).then(data => {
       strokeDash: {
         field: "team_abbreviation",
         type: "nominal",
-        legend: { title: "Team" }
+        title: "Team"
       },
       tooltip: [
         { field: "season", type: "ordinal", title: "Season" },
