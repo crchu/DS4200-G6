@@ -1,3 +1,4 @@
+// Correlation Heatmap
 Plotly.newPlot('heatmap', [{
     x: ['Age', 'Height', 'Weight', 'Points', 'Rebounds', 'Assists', 'Draft Year', 'Draft Round'],
     y: ['Age', 'Height', 'Weight', 'Points', 'Rebounds', 'Assists', 'Draft Year', 'Draft Round'],
@@ -13,18 +14,20 @@ Plotly.newPlot('heatmap', [{
     ],
     type: 'heatmap',
     colorscale: 'Viridis',
+    //  Hovering over all the axes
+    hoverinfo: 'x+y+z', 
+    showscale: true,
     text: [
-        [1, 0.7, 0.5, 0.8, 0.6, 0.4, -0.3, -0.5],
-        [0.7, 1, 0.8, 0.6, 0.5, 0.3, -0.4, -0.6],
-        [0.5, 0.8, 1, 0.7, 0.4, 0.2, -0.3, -0.4],
-        [0.8, 0.6, 0.7, 1, 0.6, 0.5, -0.5, -0.6],
-        [0.6, 0.5, 0.4, 0.6, 1, 0.7, -0.2, -0.3],
-        [0.4, 0.3, 0.2, 0.5, 0.7, 1, -0.1, -0.4],
-        [-0.3, -0.4, -0.3, -0.5, -0.2, -0.1, 1, 0.7],
-        [-0.5, -0.6, -0.4, -0.6, -0.3, -0.4, 0.7, 1]
+        ['1', '0.7', '0.5', '0.8', '0.6', '0.4', '-0.3', '-0.5'],
+        ['0.7', '1', '0.8', '0.6', '0.5', '0.3', '-0.4', '-0.6'],
+        ['0.5', '0.8', '1', '0.7', '0.4', '0.2', '-0.3', '-0.4'],
+        ['0.8', '0.6', '0.7', '1', '0.6', '0.5', '-0.5', '-0.6'],
+        ['0.6', '0.5', '0.4', '0.6', '1', '0.7', '-0.2', '-0.3'],
+        ['0.4', '0.3', '0.2', '0.5', '0.7', '1', '-0.1', '-0.4'],
+        ['-0.3', '-0.4', '-0.3', '-0.5', '-0.2', '-0.1', '1', '0.7'],
+        ['-0.5', '-0.6', '-0.4', '-0.6', '-0.3', '-0.4', '0.7', '1']
     ],
-    texttemplate: "%{text}",
-    hoverinfo: "none"
+    texttemplate: '%{text}', // Displays the numeric values directly on the heatmap
 }], {
     title: 'Correlation Heatmap of Player Metrics',
     xaxis: { title: 'Metrics' },
