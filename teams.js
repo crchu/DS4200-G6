@@ -1,4 +1,4 @@
-const csvFilePath = "all_seasons 4.csv";
+const csvFilePath = "NBA_Players_2010.csv";
 
 d3.csv(csvFilePath).then(data => {
   // Debugging: Log raw data
