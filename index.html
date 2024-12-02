@@ -179,9 +179,7 @@
 </head>
 <body>
 
-  <h1>NBA Player Stats Analysis</h1>
-
-  <h3>Average Points Comparison for Selected Teams</h3>
+  <h3>Average Metric Comparison for Selected Teams</h3>
 
   <div id="controls">
     <label for="compareSelect">Select a Team to Compare Against Celtics:</label>
@@ -190,11 +188,19 @@
     </select>
   </div>
 
-  <!-- Chart container -->
+  <div id="metricControls">
+    <label for="metricSelect">Select a Metric:</label>
+    <select id="metricSelect">
+      <option value="pts">Points</option>
+      <option value="reb">Rebounds</option>
+      <option value="ast">Assists</option>
+    </select>
+  </div>
+
   <div id="barChart"></div>
 
   <script>
-    const csvFilePath = "NBA_Players_2010.csv"; 
+    const csvFilePath = "NBA_Players_2010.csv";
 
     fetch(csvFilePath)
       .then(response => response.text())
@@ -205,10 +211,11 @@
 
         const validData = parsedData.filter(row => row.team_abbreviation && row.player_name && row.pts);
 
+        // Populate team dropdown
         const teams = [...new Set(validData.map(row => row.team_abbreviation))].sort();
         const compareSelect = document.getElementById("compareSelect");
         teams.forEach(team => {
-          if (team !== "BOS") { // Exclude Celtics from the dropdown
+          if (team !== "BOS") { 
             const option = document.createElement("option");
             option.value = team;
             option.textContent = team;
@@ -216,17 +223,28 @@
           }
         });
 
+        const metricSelect = document.getElementById("metricSelect");
+          
         compareSelect.addEventListener("change", () => {
           const selectedTeam = compareSelect.value;
+          const selectedMetric = metricSelect.value;
           if (selectedTeam) {
-            renderComparisonChart(selectedTeam, validData);
+            renderComparisonChart(selectedTeam, validData, selectedMetric);
           }
         });
 
-        function renderComparisonChart(selectedTeam, data) {
+        metricSelect.addEventListener("change", () => {
+          const selectedTeam = compareSelect.value;
+          const selectedMetric = metricSelect.value;
+          if (selectedTeam) {
+            renderComparisonChart(selectedTeam, validData, selectedMetric);
+          }
+        });
+
+        function renderComparisonChart(selectedTeam, data, metric = "pts") {
           const barChartSpec = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "title": `Points Comparison: Celtics vs ${selectedTeam}`,
+            "title": `${metric.toUpperCase()} Comparison: Celtics vs ${selectedTeam}`,
             "width": 600,
             "height": 400,
             "data": {
@@ -243,7 +261,7 @@
               },
               {
                 "aggregate": [
-                  { "op": "mean", "field": "pts", "as": "average_points" }
+                  { "op": "mean", "field": metric, "as": "average_value" }
                 ],
                 "groupby": ["team_abbreviation"]
               }
@@ -256,9 +274,9 @@
                 "title": "Team"
               },
               "y": {
-                "field": "average_points",
+                "field": "average_value",
                 "type": "quantitative",
-                "title": "Average Points"
+                "title": `Average ${metric}`
               },
               "color": {
                 "field": "team_abbreviation",
@@ -267,7 +285,7 @@
               },
               "tooltip": [
                 { "field": "team_abbreviation", "type": "nominal", "title": "Team" },
-                { "field": "average_points", "type": "quantitative", "title": "Average Points" }
+                { "field": "average_value", "type": "quantitative", "title": `Average ${metric}` }
               ]
             }
           };
