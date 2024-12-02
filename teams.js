@@ -1,122 +1,140 @@
-const margin = { top: 40, right: 30, bottom: 60, left: 50 },
-      width = 300 - margin.left - margin.right,
-      height = 300 - margin.top - margin.bottom;
+const margin = { top: 50, right: 150, bottom: 50, left: 50 },
+      width = 800 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
 
-const attributes = ['pts', 'reb', 'ast', 'gp'];
-const titles = ["Total Points Scored", "Total Rebounds", "Total Assists", "Games Played"];
-const yLabels = ["Total Points", "Total Rebounds", "Total Assists", "Games Played"];
+const attributes = ['pts', 'reb', 'ast']; // Attributes to visualize
+const attributeTitles = {
+    pts: "Total Points",
+    reb: "Total Rebounds",
+    ast: "Total Assists"
+};
 
-d3.csv("NBA_Players_2010.csv").then(data => {
-  // Preprocess the data
-  data.forEach(d => {
-    d.pts = +d.pts * d.gp; // Total points
-    d.reb = +d.reb * d.gp; // Total rebounds
-    d.ast = +d.ast * d.gp; // Total assists
-    d.gp = +d.gp; // Games played
-  });
+// Create SVG container
+const svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Extract unique teams and seasons
-  const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).sort();
-  const seasons = Array.from(new Set(data.map(d => d.season))).sort();
+// Add scales and axes
+const xScale = d3.scalePoint()
+    .range([0, width])
+    .padding(0.5);
 
-  // Populate the dropdowns
-  const teamSelect = d3.select("#teamSelect");
-  const seasonSelect = d3.select("#seasonSelect");
+const yScale = d3.scaleLinear()
+    .range([height, 0]);
 
-  teams.forEach(team => {
-    teamSelect.append("option").text(team).attr("value", team);
-  });
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // Unique color for each team
 
-  seasons.forEach(season => {
-    seasonSelect.append("option").text(season).attr("value", season);
-  });
+const xAxisGroup = svg.append("g")
+    .attr("transform", `translate(0,${height})`);
 
-  // Update the charts when a team and season are selected
-  function updateCharts(selectedTeam, selectedSeason) {
-    const filteredData = data.filter(d => d.team_abbreviation === selectedTeam && d.season === selectedSeason);
+const yAxisGroup = svg.append("g");
 
-    // Remove old charts
-    d3.select("#charts").selectAll("*").remove();
+// Add title
+const title = svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -20)
+    .attr("text-anchor", "middle")
+    .style("font-size", "16px")
+    .style("font-weight", "bold");
 
-    if (filteredData.length === 0) {
-      d3.select("#charts").append("p").text("No data available for the selected team and season.");
-      return;
+// Add tooltip
+const tooltip = d3.select("body")
+    .append("div")
+    .style("position", "absolute")
+    .style("background", "rgba(255, 255, 255, 0.8)")
+    .style("border", "1px solid #ccc")
+    .style("padding", "10px")
+    .style("border-radius", "5px")
+    .style("pointer-events", "none")
+    .style("visibility", "hidden");
+
+// Load data
+d3.csv("all_seasons_9.csv").then(data => {
+    // Process data
+    data.forEach(d => {
+        d.pts = +d.pts * +d.gp; // Total points
+        d.reb = +d.reb * +d.gp; // Total rebounds
+        d.ast = +d.ast * +d.gp; // Total assists
+    });
+
+    const seasons = Array.from(new Set(data.map(d => d.season))).sort();
+    const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).sort();
+
+    // Group data by team and season
+    const groupedData = d3.group(data, d => d.team_abbreviation);
+
+    // Update xScale and colorScale domains
+    xScale.domain(seasons);
+    colorScale.domain(teams);
+
+    // Function to update chart for a selected attribute
+    function updateChart(attribute) {
+        const maxVal = d3.max(data, d => d[attribute]);
+        yScale.domain([0, maxVal]);
+
+        // Update axes
+        xAxisGroup.transition().duration(1000).call(d3.axisBottom(xScale));
+        yAxisGroup.transition().duration(1000).call(d3.axisLeft(yScale));
+
+        // Update title
+        title.text(attributeTitles[attribute]);
+
+        // Bind data
+        const lines = svg.selectAll(".line")
+            .data(teams, d => d);
+
+        // Update existing lines
+        lines.transition().duration(1000)
+            .attr("d", team => {
+                const teamData = groupedData.get(team);
+                const line = d3.line()
+                    .x(d => xScale(d.season))
+                    .y(d => yScale(d[attribute]));
+                return line(teamData);
+            });
+
+        // Enter new lines
+        lines.enter()
+            .append("path")
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke", team => colorScale(team))
+            .attr("stroke-width", 2)
+            .attr("d", team => {
+                const teamData = groupedData.get(team);
+                const line = d3.line()
+                    .x(d => xScale(d.season))
+                    .y(d => yScale(d[attribute]));
+                return line(teamData);
+            })
+            .on("mouseover", function (event, team) {
+                d3.select(this).attr("stroke-width", 4);
+                tooltip.style("visibility", "visible").text(team);
+            })
+            .on("mousemove", function (event) {
+                tooltip.style("top", `${event.pageY + 10}px`)
+                    .style("left", `${event.pageX + 10}px`);
+            })
+            .on("mouseout", function () {
+                d3.select(this).attr("stroke-width", 2);
+                tooltip.style("visibility", "hidden");
+            });
+
+        // Remove old lines
+        lines.exit().remove();
     }
 
-    attributes.forEach((attr, i) => {
-      const chartDiv = d3.select("#charts").append("div").attr("class", "chart");
+    // Initial render
+    updateChart("pts");
 
-      // Add chart title above the chart
-      chartDiv.append("h3")
-        .attr("class", "chart-title")
-        .style("text-align", "center")
-        .style("margin-bottom", "10px")
-        .style("font-size", "16px")
-        .text(titles[i]);
-
-      const svg = chartDiv.append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-      // Define scales
-      const x = d3.scaleBand()
-        .domain([selectedSeason])
-        .range([0, width])
-        .padding(0.5);
-
-      const y = d3.scaleLinear()
-        .domain([0, d3.max(filteredData, d => d[attr])]).nice()
-        .range([height, 0]);
-
-      // Add x-axis
-      svg.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
-        .selectAll("text")
-        .style("font-size", "12px");
-
-      // Add y-axis
-      svg.append("g")
-        .call(d3.axisLeft(y).ticks(5).tickSize(-width))
-        .selectAll("line")
-        .style("stroke", "#e0e0e0");
-
-      // Add bars
-      svg.selectAll(".bar")
-        .data(filteredData)
+    // Add buttons to switch between attributes
+    d3.select("#buttons").selectAll("button")
+        .data(attributes)
         .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", d => x(d.season))
-        .attr("y", d => y(d[attr]))
-        .attr("width", x.bandwidth())
-        .attr("height", d => height - y(d[attr]))
-        .attr("fill", "steelblue");
-
-      // Add y-axis label
-      svg.append("text")
-        .attr("class", "y-axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height / 2)
-        .attr("y", -margin.left + 15)
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
-        .text(yLabels[i]);
-    });
-  }
-
-  // Initial load
-  const initialTeam = teams[0];
-  const initialSeason = seasons[0];
-  updateCharts(initialTeam, initialSeason);
-
-  teamSelect.on("change", function() {
-    updateCharts(this.value, seasonSelect.property("value"));
-  });
-
-  seasonSelect.on("change", function() {
-    updateCharts(teamSelect.property("value"), this.value);
-  });
+        .append("button")
+        .text(attr => attributeTitles[attr])
+        .on("click", attr => updateChart(attr));
 });
