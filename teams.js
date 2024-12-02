@@ -1,39 +1,32 @@
 const csvFilePath = "NBA_Players_2010.csv";
 
-// Function to initialize the dropdowns and charts
+// Function to initialize dropdowns and charts
 function initializeComparisonCharts() {
   fetch(csvFilePath)
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
+        throw new Error("Failed to fetch CSV: " + response.statusText);
       }
       return response.text();
     })
     .then((csvData) => {
-      // Parse CSV data
+      // Parse the CSV data
       const parsedData = Papa.parse(csvData, { header: true }).data;
 
       console.log("Raw Parsed Data:", parsedData);
 
-      // Filter and preprocess the data
-      const processedData = parsedData
-        .filter(
-          (row) =>
-            row.team_abbreviation &&
-            row.season &&
-            !isNaN(parseFloat(row.pts)) &&
-            !isNaN(parseFloat(row.gp))
-        )
-        .map((row) => ({
-          ...row,
-          pts: parseFloat(row.pts) || 0,
-          reb: parseFloat(row.reb) || 0,
-          ast: parseFloat(row.ast) || 0,
-          gp: parseFloat(row.gp) || 0,
-          total_points: (parseFloat(row.pts) || 0) * (parseFloat(row.gp) || 0),
-          total_rebounds: (parseFloat(row.reb) || 0) * (parseFloat(row.gp) || 0),
-          total_assists: (parseFloat(row.ast) || 0) * (parseFloat(row.gp) || 0),
-        }));
+      // Filter and preprocess valid rows
+      const processedData = parsedData.filter(
+        (row) =>
+          row.team_abbreviation &&
+          row.season &&
+          !isNaN(parseFloat(row.pts)) &&
+          !isNaN(parseFloat(row.gp))
+      );
+
+      if (processedData.length === 0) {
+        throw new Error("No valid data found in the CSV file.");
+      }
 
       console.log("Processed Data:", processedData);
 
@@ -66,10 +59,10 @@ function initializeComparisonCharts() {
       teamSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
       seasonSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
     })
-    .catch((error) => console.error("Error loading or processing the data:", error));
+    .catch((error) => console.error("Error initializing charts:", error));
 }
 
-// Function to update the charts
+// Function to update charts based on selections
 function updateCharts(teamSelect, seasonSelect, data) {
   const selectedTeam = teamSelect.value;
   const selectedSeason = seasonSelect.value;
@@ -86,16 +79,21 @@ function updateCharts(teamSelect, seasonSelect, data) {
     (row) => row.team_abbreviation === selectedTeam && row.season === selectedSeason
   );
 
+  if (filteredData.length === 0) {
+    console.warn("No data available for the selected team and season.");
+    return;
+  }
+
   console.log("Filtered Data:", filteredData);
 
   // Calculate totals
-  const totalPoints = filteredData.reduce((sum, row) => sum + row.total_points, 0);
-  const totalRebounds = filteredData.reduce((sum, row) => sum + row.total_rebounds, 0);
-  const totalAssists = filteredData.reduce((sum, row) => sum + row.total_assists, 0);
+  const totalPoints = filteredData.reduce((sum, row) => sum + (row.pts * row.gp), 0);
+  const totalRebounds = filteredData.reduce((sum, row) => sum + (row.reb * row.gp), 0);
+  const totalAssists = filteredData.reduce((sum, row) => sum + (row.ast * row.gp), 0);
 
   console.log(`Totals - Points: ${totalPoints}, Rebounds: ${totalRebounds}, Assists: ${totalAssists}`);
 
-  // Define metrics for the charts
+  // Metrics for charts
   const metrics = [
     { id: "chart-1", title: "Total Points", value: totalPoints },
     { id: "chart-2", title: "Total Rebounds", value: totalRebounds },
