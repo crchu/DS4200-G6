@@ -1,116 +1,145 @@
-const csvFilePath = "NBA_Players_2010.csv";
+const csvFilePath = "all_seasons 4.csv";
 
-function initializeComparisonCharts() {
-  fetch(csvFilePath)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to fetch CSV: " + response.statusText);
-      }
-      return response.text();
-    })
-    .then((csvData) => {
-      const parsedData = Papa.parse(csvData, { header: true }).data;
+d3.csv(csvFilePath).then(data => {
+  // Debugging: Log raw data
+  console.log("Loaded Data:", data);
 
-      // Validate and process data
-      const processedData = parsedData
-        .filter((row) => row.team_abbreviation && row.season)
-        .map((row) => ({
-          team_abbreviation: row.team_abbreviation,
-          season: row.season,
-          pts: parseFloat(row.pts || 0),
-          gp: parseInt(row.gp || 0),
-          reb: parseFloat(row.reb || 0),
-          ast: parseFloat(row.ast || 0),
-          total_points: parseFloat(row.pts || 0) * parseInt(row.gp || 0),
-          total_rebounds: parseFloat(row.reb || 0) * parseInt(row.gp || 0),
-          total_assists: parseFloat(row.ast || 0) * parseInt(row.gp || 0),
-        }));
+  // Extract unique teams and seasons
+  const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).filter(Boolean).sort();
+  const seasons = Array.from(new Set(data.map(d => d.season))).filter(Boolean).sort();
 
-      console.log("Processed Data:", processedData);
+  // Debugging: Log extracted values
+  console.log("Teams:", teams);
+  console.log("Seasons:", seasons);
 
-      // Extract unique teams and seasons
-      const teams = [...new Set(processedData.map((row) => row.team_abbreviation))].sort();
-      const seasons = [...new Set(processedData.map((row) => row.season))].sort();
+  const teamSelect = d3.select("#teamSelect");
+  const seasonSelect = d3.select("#seasonSelect");
 
-      console.log("Teams:", teams);
-      console.log("Seasons:", seasons);
+  // Populate the team dropdown
+  teams.forEach(team => {
+    if (team) {
+      console.log("Adding team option:", team); // Log every team added
+      teamSelect.append("option").text(team).attr("value", team);
+    }
+  });
 
-      // Populate the dropdowns
-      const teamSelect = document.getElementById("teamSelect");
-      const seasonSelect = document.getElementById("seasonSelect");
+  // Populate the season dropdown
+  seasons.forEach(season => {
+    if (season) {
+      console.log("Adding season option:", season); // Log every season added
+      seasonSelect.append("option").text(season).attr("value", season);
+    }
+  });
 
-      teams.forEach((team) => {
-        const option = document.createElement("option");
-        option.value = team;
-        option.textContent = team;
-        teamSelect.appendChild(option);
-      });
+  // Handle dropdown change
+  teamSelect.on("change", function () {
+    const selectedTeam = this.value;
+    const selectedSeason = seasonSelect.property("value");
+    if (selectedTeam && selectedSeason) {
+      updateCharts(selectedTeam, selectedSeason, data);
+    }
+  });
 
-      seasons.forEach((season) => {
-        const option = document.createElement("option");
-        option.value = season;
-        option.textContent = season;
-        seasonSelect.appendChild(option);
-      });
+  seasonSelect.on("change", function () {
+    const selectedSeason = this.value;
+    const selectedTeam = teamSelect.property("value");
+    if (selectedTeam && selectedSeason) {
+      updateCharts(selectedTeam, selectedSeason, data);
+    }
+  });
 
-      // Event listeners for dropdown changes
-      teamSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
-      seasonSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
-    })
-    .catch((error) => console.error("Error loading or processing data:", error));
-}
+  // Initialize with the first team and season
+  if (teams.length > 0 && seasons.length > 0) {
+    teamSelect.property("value", teams[0]);
+    seasonSelect.property("value", seasons[0]);
+    updateCharts(teams[0], seasons[0], data);
+  } else {
+    console.error("No valid teams or seasons found.");
+  }
+}).catch(error => {
+  console.error("Error loading CSV file:", error);
+});
 
-function updateCharts(teamSelect, seasonSelect, data) {
-  const selectedTeam = teamSelect.value;
-  const selectedSeason = seasonSelect.value;
+// Update charts function
+function updateCharts(team, season, data) {
+  const filteredData = data.filter(d => d.team_abbreviation === team && d.season === season);
 
-  if (!selectedTeam || !selectedSeason) {
-    console.warn("Both team and season must be selected.");
+  if (filteredData.length === 0) {
+    d3.select("#charts").text("No data available for the selected team and season.");
     return;
   }
 
-  console.log(`Selected Team: ${selectedTeam}, Selected Season: ${selectedSeason}`);
+  d3.select("#charts").selectAll("*").remove(); // Clear existing charts
 
-  const filteredData = data.filter(
-    (row) => row.team_abbreviation === selectedTeam && row.season === selectedSeason
-  );
+  // Metric 1: Total Points
+  const totalPoints = filteredData.reduce((sum, d) => sum + (+d.pts || 0), 0);
 
-  console.log("Filtered Data:", filteredData);
+  // Metric 2: Total Rebounds
+  const totalRebounds = filteredData.reduce((sum, d) => sum + (+d.reb || 0), 0);
 
-  const totalPoints = filteredData.reduce((sum, row) => sum + row.total_points, 0);
-  const totalRebounds = filteredData.reduce((sum, row) => sum + row.total_rebounds, 0);
-  const totalAssists = filteredData.reduce((sum, row) => sum + row.total_assists, 0);
+  // Metric 3: Total Assists
+  const totalAssists = filteredData.reduce((sum, d) => sum + (+d.ast || 0), 0);
 
+  // Bar Chart for Total Points, Rebounds, and Assists
   const metrics = [
-    { id: "chart-1", title: "Total Points", value: totalPoints },
-    { id: "chart-2", title: "Total Rebounds", value: totalRebounds },
-    { id: "chart-3", title: "Total Assists", value: totalAssists },
+    { label: "Total Points", value: totalPoints },
+    { label: "Total Rebounds", value: totalRebounds },
+    { label: "Total Assists", value: totalAssists }
   ];
 
-  metrics.forEach((metric) => {
-    const chartSpec = {
-      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "title": `${metric.title} (${selectedSeason}) for ${selectedTeam}`,
-      "width": 300,
-      "height": 400,
-      "data": {
-        "values": [{ Team: selectedTeam, Value: metric.value }],
-      },
-      "mark": "bar",
-      "encoding": {
-        "x": { "field": "Team", "type": "nominal", "title": "Team" },
-        "y": { "field": "Value", "type": "quantitative", "title": metric.title },
-        "color": { "field": "Team", "type": "nominal", "title": "Team" },
-        "tooltip": [
-          { "field": "Team", "type": "nominal", "title": "Team" },
-          { "field": "Value", "type": "quantitative", "title": metric.title },
-        ],
-      },
-    };
+  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const width = 400 - margin.left - margin.right;
+  const height = 300 - margin.top - margin.bottom;
 
-    vegaEmbed(`#${metric.id}`, chartSpec).catch(console.error);
-  });
+  const svg = d3.select("#charts")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleBand()
+    .domain(metrics.map(d => d.label))
+    .range([0, width])
+    .padding(0.1);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(metrics, d => d.value)]).nice()
+    .range([height, 0]);
+
+  // X Axis
+  svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+    .attr("transform", "rotate(-45)")
+    .style("text-anchor", "end");
+
+  // Y Axis
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  // Bars
+  svg.selectAll(".bar")
+    .data(metrics)
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("x", d => x(d.label))
+    .attr("y", d => y(d.value))
+    .attr("width", x.bandwidth())
+    .attr("height", d => height - y(d.value))
+    .attr("fill", "steelblue");
+
+  // Add labels to bars
+  svg.selectAll(".label")
+    .data(metrics)
+    .enter()
+    .append("text")
+    .attr("x", d => x(d.label) + x.bandwidth() / 2)
+    .attr("y", d => y(d.value) - 5)
+    .attr("text-anchor", "middle")
+    .style("fill", "black")
+    .style("font-size", "12px")
+    .text(d => d.value);
 }
-
-// Initialize the charts
-initializeComparisonCharts();
