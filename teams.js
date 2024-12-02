@@ -3,7 +3,7 @@ const csvFilePath = "NBA_Players_2010.csv";
 d3.csv(csvFilePath).then(data => {
   // Step 1: Preprocess the data
   const processedData = data.map(d => ({
-    season: d.season,
+    season: d.season.trim(),
     team_abbreviation: d.team_abbreviation ? d.team_abbreviation.trim() : "Unknown", 
     pts: +d.pts,
     reb: +d.reb,
@@ -38,11 +38,11 @@ d3.csv(csvFilePath).then(data => {
   const vegaLiteSpec = {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
     title: {
-      text: "Team Performance Metrics Across Seasons",
-      subtitle: "Comparing Points, Rebounds, and Assists for All Teams",
+      text: "NBA Team Performance Metrics Over Seasons",
+      subtitle: "Trends in Points, Rebounds, and Assists Across Teams",
       fontSize: 16
     },
-    width: 800,
+    width: 900,
     height: 500,
     data: {
       values: aggregatedData
@@ -50,7 +50,10 @@ d3.csv(csvFilePath).then(data => {
     transform: [
       { fold: ["pts", "reb", "ast"], as: ["metric", "value"] }
     ],
-    mark: "line",
+    mark: {
+      type: "line",
+      point: true
+    },
     encoding: {
       x: {
         field: "season",
@@ -79,7 +82,7 @@ d3.csv(csvFilePath).then(data => {
         { field: "season", type: "ordinal", title: "Season" },
         { field: "team_abbreviation", type: "nominal", title: "Team" },
         { field: "metric", type: "nominal", title: "Metric" },
-        { field: "value", type: "quantitative", title: "Average Value" }
+        { field: "value", type: "quantitative", title: "Average Value", format: ".2f" }
       ]
     },
     config: {
