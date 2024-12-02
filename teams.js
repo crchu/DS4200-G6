@@ -4,56 +4,57 @@ d3.csv(csvFilePath).then(data => {
   // Step 1: Preprocess the data
   const processedData = data.map(d => ({
     season: d.season.trim(),
-    team_abbreviation: d.team_abbreviation ? d.team_abbreviation.trim() : "Unknown", 
-    pts: +d.pts,
-    reb: +d.reb,
-    ast: +d.ast
+    team_abbreviation: d.team_abbreviation.trim(),
+    gp: +d.gp, // Games played
+    pts: +d.pts, // Average points
+    reb: +d.reb, // Average rebounds
+    ast: +d.ast // Average assists
   }));
 
-  // Debug: Log processed data to check team_abbreviation values
-  console.log("Processed Data:", processedData);
+  // Step 2: Calculate total metrics for each player (points, rebounds, assists)
+  const playerTotals = processedData.map(d => ({
+    season: d.season,
+    team_abbreviation: d.team_abbreviation,
+    total_points: d.pts * d.gp, // Total points scored by the player
+    total_rebounds: d.reb * d.gp, // Total rebounds
+    total_assists: d.ast * d.gp // Total assists
+  }));
 
-  // Filter out rows with invalid team abbreviations
-  const filteredData = processedData.filter(d => d.team_abbreviation !== "Unknown");
-
-  // Step 2: Aggregate data by team and season
-  const aggregatedData = Array.from(
-    d3.group(filteredData, d => `${d.season}-${d.team_abbreviation}`),
+  // Step 3: Aggregate totals at the team level by season
+  const teamTotals = Array.from(
+    d3.group(playerTotals, d => `${d.season}-${d.team_abbreviation}`),
     ([key, values]) => {
       const [season, team_abbreviation] = key.split("-");
       return {
         season,
         team_abbreviation,
-        pts: d3.mean(values, d => d.pts),
-        reb: d3.mean(values, d => d.reb),
-        ast: d3.mean(values, d => d.ast)
+        total_points: d3.sum(values, v => v.total_points),
+        total_rebounds: d3.sum(values, v => v.total_rebounds),
+        total_assists: d3.sum(values, v => v.total_assists)
       };
     }
   );
 
-  // Debug: Log aggregated data to verify team_abbreviation
-  console.log("Aggregated Data:", aggregatedData);
+  // Debug: Log aggregated data for verification
+  console.log("Team Totals:", teamTotals);
 
-  // Step 3: Generate the improved Vega-Lite spec
+  // Step 4: Generate Vega-Lite spec
   const vegaLiteSpec = {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
     title: {
-      text: "NBA Team Performance Metrics Over Seasons",
-      subtitle: "Trends in Points, Rebounds, and Assists Across Teams",
+      text: "NBA Team Total Performance Metrics by Season",
+      subtitle: "Total Points, Rebounds, and Assists per Team and Season",
       fontSize: 16
     },
     width: 900,
     height: 500,
     data: {
-      values: aggregatedData
+      values: teamTotals
     },
     transform: [
-      { fold: ["pts", "reb", "ast"], as: ["metric", "value"] }
+      { fold: ["total_points", "total_rebounds", "total_assists"], as: ["metric", "value"] }
     ],
-    mark: {
-      type: "line",
-      point: true
-    },
+    mark: "bar",
     encoding: {
       x: {
         field: "season",
@@ -65,7 +66,7 @@ d3.csv(csvFilePath).then(data => {
       y: {
         field: "value",
         type: "quantitative",
-        title: "Average Metric Value"
+        title: "Total Value"
       },
       color: {
         field: "metric",
@@ -73,25 +74,25 @@ d3.csv(csvFilePath).then(data => {
         title: "Metric",
         scale: { scheme: "category10" }
       },
-      strokeDash: {
+      column: {
         field: "team_abbreviation",
         type: "nominal",
-        title: "Team"
+        title: "Team",
+        spacing: 10
       },
       tooltip: [
         { field: "season", type: "ordinal", title: "Season" },
         { field: "team_abbreviation", type: "nominal", title: "Team" },
         { field: "metric", type: "nominal", title: "Metric" },
-        { field: "value", type: "quantitative", title: "Average Value", format: ".2f" }
+        { field: "value", type: "quantitative", title: "Total Value", format: ".2f" }
       ]
     },
     config: {
-      line: { point: true },
       axis: { labelFontSize: 12, titleFontSize: 14 },
       legend: { titleFontSize: 14, labelFontSize: 12 }
     }
   };
 
-  // Step 4: Render the chart
+  // Step 5: Render the chart
   vegaEmbed("#chart", vegaLiteSpec).catch(console.error);
 });
