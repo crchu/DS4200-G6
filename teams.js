@@ -1,6 +1,5 @@
 const csvFilePath = "NBA_Players_2010.csv";
 
-// Function to initialize dropdowns and charts
 function initializeComparisonCharts() {
   fetch(csvFilePath)
     .then((response) => {
@@ -10,23 +9,22 @@ function initializeComparisonCharts() {
       return response.text();
     })
     .then((csvData) => {
-      // Parse the CSV data
       const parsedData = Papa.parse(csvData, { header: true }).data;
 
-      console.log("Raw Parsed Data:", parsedData);
-
-      // Filter and preprocess valid rows
-      const processedData = parsedData.filter(
-        (row) =>
-          row.team_abbreviation &&
-          row.season &&
-          !isNaN(parseFloat(row.pts)) &&
-          !isNaN(parseFloat(row.gp))
-      );
-
-      if (processedData.length === 0) {
-        throw new Error("No valid data found in the CSV file.");
-      }
+      // Validate and process data
+      const processedData = parsedData
+        .filter((row) => row.team_abbreviation && row.season)
+        .map((row) => ({
+          team_abbreviation: row.team_abbreviation,
+          season: row.season,
+          pts: parseFloat(row.pts || 0),
+          gp: parseInt(row.gp || 0),
+          reb: parseFloat(row.reb || 0),
+          ast: parseFloat(row.ast || 0),
+          total_points: parseFloat(row.pts || 0) * parseInt(row.gp || 0),
+          total_rebounds: parseFloat(row.reb || 0) * parseInt(row.gp || 0),
+          total_assists: parseFloat(row.ast || 0) * parseInt(row.gp || 0),
+        }));
 
       console.log("Processed Data:", processedData);
 
@@ -37,8 +35,10 @@ function initializeComparisonCharts() {
       console.log("Teams:", teams);
       console.log("Seasons:", seasons);
 
-      // Populate the team dropdown
+      // Populate the dropdowns
       const teamSelect = document.getElementById("teamSelect");
+      const seasonSelect = document.getElementById("seasonSelect");
+
       teams.forEach((team) => {
         const option = document.createElement("option");
         option.value = team;
@@ -46,8 +46,6 @@ function initializeComparisonCharts() {
         teamSelect.appendChild(option);
       });
 
-      // Populate the season dropdown
-      const seasonSelect = document.getElementById("seasonSelect");
       seasons.forEach((season) => {
         const option = document.createElement("option");
         option.value = season;
@@ -59,10 +57,9 @@ function initializeComparisonCharts() {
       teamSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
       seasonSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
     })
-    .catch((error) => console.error("Error initializing charts:", error));
+    .catch((error) => console.error("Error loading or processing data:", error));
 }
 
-// Function to update charts based on selections
 function updateCharts(teamSelect, seasonSelect, data) {
   const selectedTeam = teamSelect.value;
   const selectedSeason = seasonSelect.value;
@@ -74,33 +71,22 @@ function updateCharts(teamSelect, seasonSelect, data) {
 
   console.log(`Selected Team: ${selectedTeam}, Selected Season: ${selectedSeason}`);
 
-  // Filter data for the selected team and season
   const filteredData = data.filter(
     (row) => row.team_abbreviation === selectedTeam && row.season === selectedSeason
   );
 
-  if (filteredData.length === 0) {
-    console.warn("No data available for the selected team and season.");
-    return;
-  }
-
   console.log("Filtered Data:", filteredData);
 
-  // Calculate totals
-  const totalPoints = filteredData.reduce((sum, row) => sum + (row.pts * row.gp), 0);
-  const totalRebounds = filteredData.reduce((sum, row) => sum + (row.reb * row.gp), 0);
-  const totalAssists = filteredData.reduce((sum, row) => sum + (row.ast * row.gp), 0);
+  const totalPoints = filteredData.reduce((sum, row) => sum + row.total_points, 0);
+  const totalRebounds = filteredData.reduce((sum, row) => sum + row.total_rebounds, 0);
+  const totalAssists = filteredData.reduce((sum, row) => sum + row.total_assists, 0);
 
-  console.log(`Totals - Points: ${totalPoints}, Rebounds: ${totalRebounds}, Assists: ${totalAssists}`);
-
-  // Metrics for charts
   const metrics = [
     { id: "chart-1", title: "Total Points", value: totalPoints },
     { id: "chart-2", title: "Total Rebounds", value: totalRebounds },
     { id: "chart-3", title: "Total Assists", value: totalAssists },
   ];
 
-  // Render each chart
   metrics.forEach((metric) => {
     const chartSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -122,10 +108,9 @@ function updateCharts(teamSelect, seasonSelect, data) {
       },
     };
 
-    // Render the chart in its respective div
     vegaEmbed(`#${metric.id}`, chartSpec).catch(console.error);
   });
 }
 
-// Initialize the charts on script load
+// Initialize the charts
 initializeComparisonCharts();
