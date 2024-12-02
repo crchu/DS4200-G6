@@ -183,14 +183,50 @@
   <div id="scatterPlot"></div>
 
   <script>
-    // JSON specification for the Altair chart
+    const csvFilePath = "NBA_Players_2010.csv";
+
+    fetch(csvFilePath)
+      .then(response => response.text())
+      .then(csvData => {
+        const parsedData = Papa.parse(csvData, { header: true }).data;
+
+        // the team dropdown
+        const teams = [...new Set(parsedData.map(row => row.team_abbreviation))].filter(Boolean);
+        const teamSelect = document.getElementById("teamSelect");
+        teams.forEach(team => {
+          const option = document.createElement("option");
+          option.value = team;
+          option.textContent = team;
+          teamSelect.appendChild(option);
+        });
+
+        // the player dropdown based on selected team
+        const playerSelect = document.getElementById("playerSelect");
+        teamSelect.addEventListener("change", () => {
+          const selectedTeam = teamSelect.value;
+          const players = parsedData
+            .filter(row => row.team_abbreviation === selectedTeam)
+            .map(row => row.player_name)
+            .filter(Boolean);
+
+          playerSelect.innerHTML = '<option value="">-- Select a Player --</option>';
+          players.forEach(player => {
+            const option = document.createElement("option");
+            option.value = player;
+            option.textContent = player;
+            playerSelect.appendChild(option);
+          });
+        });
+      })
+      .catch(error => console.error("Error loading or parsing CSV:", error));
+
     const scatterPlotSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "title": "Average Points Comparison for Selected Teams",
       "width": 600,
       "height": 400,
       "data": {
-        "url": "NBA_Players_2010.csv"  
+        "url": csvFilePath
       },
       "mark": "circle",
       "encoding": {
@@ -205,26 +241,6 @@
     };
 
     vegaEmbed("#scatterPlot", scatterPlotSpec).catch(console.error);
-
-    fetch('NBA_Players_2010')
-      .then(response => response.text())
-      .then(csvData => {
-        console.log("CSV data loaded successfully.");
-        const parsedData = Papa.parse(csvData, { header: true }).data;
-        const teams = [...new Set(parsedData.map(row => row.team_abbreviation))].filter(Boolean);
-        console.log("Unique teams:", teams);
-
-        const teamSelect = document.getElementById('teamSelect');
-        teams.forEach(team => {
-          const option = document.createElement('option');
-          option.value = team;
-          option.text = team;
-          teamSelect.add(option);
-        });
-      })
-      .catch(error => {
-        console.error("Error loading or parsing CSV:", error);
-      });
   </script>
 </body>
 </html>
