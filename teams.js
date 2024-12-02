@@ -1,7 +1,7 @@
 async function fetchData() {
     try {
         // Fetch the CSV file
-        const response = await fetch('NBA_Players_2010\.csv');
+        const response = await fetch('NBA_Players_2010.csv');
         if (!response.ok) throw new Error('Failed to load CSV file');
         const csvText = await response.text();
 
