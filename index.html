@@ -163,76 +163,23 @@
           <select id="playerSelect"></select>
         </div>
       
-        <h3>Player Performance Charts</h3>
-        <div id="charts"></div>
+        <h3>Select Team and Season</h3>
+        <div id="controls">
+            <label for="teamSelect">Select a Team:</label>
+            <select id="teamSelect">
+            <option value="">-- Select a Team --</option>
+            </select>
 
+        <label for="seasonSelect">Select a Season:</label>
+        <select id="seasonSelect">
+            <option value="">-- Select a Season --</option>
+        </select>
+    </div>
 
-        <h3>Shooting Efficiency by Draft Round</h3>
-        <p>This chart shows the shooting efficiency of players categorized by draft rounds...</p>
-        <div id="shootingEfficiency" style="width: 100%; height: 500px;"></div>
+    <h3>Team Performance Charts</h3>
+    <div id="charts" style="display: flex; justify-content: space-around;"></div>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NBA Team and Season Analysis</title>
-  <script src="https://d3js.org/d3.v6.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    h3 {
-      text-align: center;
-    }
-    label {
-      margin-right: 10px;
-      font-weight: bold;
-    }
-    select {
-      margin-right: 20px;
-      padding: 5px;
-      font-size: 14px;
-    }
-    #charts {
-      margin-top: 30px;
-      text-align: center;
-    }
-    .bar {
-      stroke-width: 1px;
-      stroke: black;
-    }
-    svg text {
-      font-size: 12px;
-      fill: black;
-    }
-    .axis text {
-      font-size: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h3>Team and Season Analysis</h3>
-  <div style="text-align: center; margin-bottom: 20px;">
-    <label for="teamSelect">Team:</label>
-    <select id="teamSelect">
-      <option value="">-- Select Team --</option>
-    </select>
-
-    <label for="seasonSelect">Season:</label>
-    <select id="seasonSelect">
-      <option value="">-- Select Season --</option>
-    </select>
-  </div>
-
-  <div id="charts">
-    <p>Select a team and season to see the data visualization.</p>
-  </div>
-
-  <script src="teams.js"></script>
-</body>
-</html>
+    <script src="teams.js"></script>
 
         <script src="script.js"></script>
         <script src="shrey's visualizations.js"></script>
