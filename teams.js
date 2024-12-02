@@ -38,47 +38,45 @@ d3.csv(csvFilePath).then(data => {
   // Debug: Log aggregated data for verification
   console.log("Team Totals:", teamTotals);
 
-  // Step 4: Generate Vega-Lite spec
+  // Step 4: Generate the radar chart spec
   const vegaLiteSpec = {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
     title: {
-      text: "NBA Team Total Performance Metrics by Season",
-      subtitle: "Total Points, Rebounds, and Assists per Team and Season",
+      text: "NBA Team Performance Metrics Radar",
+      subtitle: "Compare Total Points, Assists, and Rebounds Across Teams",
       fontSize: 16
     },
-    width: 900,
+    width: 500,
     height: 500,
     data: {
       values: teamTotals
     },
     transform: [
+      { filter: "datum.season == '2022'" }, // Default to the 2022 season
       { fold: ["total_points", "total_rebounds", "total_assists"], as: ["metric", "value"] }
     ],
-    mark: "bar",
+    mark: {
+      type: "line",
+      point: true
+    },
     encoding: {
-      x: {
-        field: "season",
-        type: "ordinal",
-        title: "Season",
-        sort: "ascending",
-        axis: { labelAngle: 0 }
-      },
-      y: {
-        field: "value",
-        type: "quantitative",
-        title: "Total Value"
-      },
-      color: {
+      theta: {
         field: "metric",
         type: "nominal",
         title: "Metric",
-        scale: { scheme: "category10" }
+        sort: ["total_points", "total_rebounds", "total_assists"]
       },
-      column: {
+      radius: {
+        field: "value",
+        type: "quantitative",
+        title: "Total Value",
+        scale: { zero: true }
+      },
+      color: {
         field: "team_abbreviation",
         type: "nominal",
         title: "Team",
-        spacing: 10
+        legend: { orient: "top" }
       },
       tooltip: [
         { field: "season", type: "ordinal", title: "Season" },
@@ -88,11 +86,39 @@ d3.csv(csvFilePath).then(data => {
       ]
     },
     config: {
+      view: { stroke: null },
       axis: { labelFontSize: 12, titleFontSize: 14 },
       legend: { titleFontSize: 14, labelFontSize: 12 }
     }
   };
 
-  // Step 5: Render the chart
+  // Render the radar chart
   vegaEmbed("#chart", vegaLiteSpec).catch(console.error);
+
+  // Add interactivity: Dropdown for selecting seasons
+  const seasons = Array.from(new Set(teamTotals.map(d => d.season))).sort();
+  const dropdown = d3.select("body").append("select").attr("id", "seasonDropdown");
+
+  dropdown
+    .selectAll("option")
+    .data(seasons)
+    .enter()
+    .append("option")
+    .attr("value", d => d)
+    .text(d => d);
+
+  dropdown.on("change", function () {
+    const selectedSeason = this.value;
+
+    // Update the chart with the selected season
+    const updatedSpec = {
+      ...vegaLiteSpec,
+      transform: [
+        { filter: `datum.season == '${selectedSeason}'` },
+        { fold: ["total_points", "total_rebounds", "total_assists"], as: ["metric", "value"] }
+      ]
+    };
+
+    vegaEmbed("#chart", updatedSpec).catch(console.error);
+  });
 });
