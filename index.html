@@ -190,9 +190,11 @@
       .then(csvData => {
         const parsedData = Papa.parse(csvData, { header: true }).data;
 
-        // Filter valid rows
-        const validData = parsedData.filter(row => row.team_abbreviation && row.player_name);
+        console.log("Parsed Data:", parsedData);
 
+        const validData = parsedData.filter(row => row.team_abbreviation && row.player_name);
+        console.log("Valid Data:", validData);
+          
         const teams = [...new Set(validData.map(row => row.team_abbreviation))].sort();
         const teamSelect = document.getElementById("teamSelect");
         teams.forEach(team => {
@@ -209,7 +211,7 @@
             .filter(row => row.team_abbreviation === selectedTeam)
             .map(row => row.player_name)
             .sort();
-
+            
           playerSelect.innerHTML = '<option value="">-- Select a Player --</option>';
           players.forEach(player => {
             const option = document.createElement("option");
@@ -245,11 +247,5 @@
   </script>
 </body>
 </html>
-      
-        <h3>Player Performance Charts</h3>
-        <div id="charts"></div>
-      
-        <script src="script.js"></script>
-
 </body>
 </html>
