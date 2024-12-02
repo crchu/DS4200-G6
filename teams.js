@@ -1,124 +1,66 @@
-const csvFilePath = "NBA_Players_2010.csv";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Stats Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="playerChart" width="800" height="400"></canvas>
+    <script>
+        // Sample data (replace with your CSV processing logic)
+        const data = [
+            { height: 193.04, weight: 94.8, points: 3.9 },
+            { height: 190.5, weight: 86.18, points: 3.8 },
+            { height: 203.2, weight: 103.42, points: 8.3 },
+            { height: 203.2, weight: 102.06, points: 10.2 },
+            { height: 213.36, weight: 119.75, points: 2.8 }
+        ];
 
-d3.csv(csvFilePath).then(data => {
-  // Step 1: Preprocess the data
-  const processedData = data.map(d => ({
-    season: d.season.trim(),
-    team_abbreviation: d.team_abbreviation.trim(),
-    gp: +d.gp, // Games played
-    pts: +d.pts, // Average points
-    reb: +d.reb, // Average rebounds
-    ast: +d.ast // Average assists
-  }));
+        // Transform data for the scatter plot
+        const chartData = data.map(player => ({
+            x: player.height,
+            y: player.weight,
+            r: player.points // Use points to determine bubble size
+        }));
 
-  // Step 2: Calculate total metrics for each player (points, rebounds, assists)
-  const playerTotals = processedData.map(d => ({
-    season: d.season,
-    team_abbreviation: d.team_abbreviation,
-    total_points: d.pts * d.gp, // Total points scored by the player
-    total_rebounds: d.reb * d.gp, // Total rebounds
-    total_assists: d.ast * d.gp // Total assists
-  }));
-
-  // Step 3: Aggregate totals at the team level by season
-  const teamTotals = Array.from(
-    d3.group(playerTotals, d => `${d.season}-${d.team_abbreviation}`),
-    ([key, values]) => {
-      const [season, team_abbreviation] = key.split("-");
-      return {
-        season,
-        team_abbreviation,
-        total_points: d3.sum(values, v => v.total_points),
-        total_rebounds: d3.sum(values, v => v.total_rebounds),
-        total_assists: d3.sum(values, v => v.total_assists)
-      };
-    }
-  );
-
-  // Debug: Log aggregated data for verification
-  console.log("Team Totals:", teamTotals);
-
-  // Step 4: Generate the radar chart spec
-  const vegaLiteSpec = {
-    $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-    title: {
-      text: "NBA Team Performance Metrics Radar",
-      subtitle: "Compare Total Points, Assists, and Rebounds Across Teams",
-      fontSize: 16
-    },
-    width: 500,
-    height: 500,
-    data: {
-      values: teamTotals
-    },
-    transform: [
-      { filter: "datum.season == '2022'" }, // Default to the 2022 season
-      { fold: ["total_points", "total_rebounds", "total_assists"], as: ["metric", "value"] }
-    ],
-    mark: {
-      type: "line",
-      point: true
-    },
-    encoding: {
-      theta: {
-        field: "metric",
-        type: "nominal",
-        title: "Metric",
-        sort: ["total_points", "total_rebounds", "total_assists"]
-      },
-      radius: {
-        field: "value",
-        type: "quantitative",
-        title: "Total Value",
-        scale: { zero: true }
-      },
-      color: {
-        field: "team_abbreviation",
-        type: "nominal",
-        title: "Team",
-        legend: { orient: "top" }
-      },
-      tooltip: [
-        { field: "season", type: "ordinal", title: "Season" },
-        { field: "team_abbreviation", type: "nominal", title: "Team" },
-        { field: "metric", type: "nominal", title: "Metric" },
-        { field: "value", type: "quantitative", title: "Total Value", format: ".2f" }
-      ]
-    },
-    config: {
-      view: { stroke: null },
-      axis: { labelFontSize: 12, titleFontSize: 14 },
-      legend: { titleFontSize: 14, labelFontSize: 12 }
-    }
-  };
-
-  // Render the radar chart
-  vegaEmbed("#chart", vegaLiteSpec).catch(console.error);
-
-  // Add interactivity: Dropdown for selecting seasons
-  const seasons = Array.from(new Set(teamTotals.map(d => d.season))).sort();
-  const dropdown = d3.select("body").append("select").attr("id", "seasonDropdown");
-
-  dropdown
-    .selectAll("option")
-    .data(seasons)
-    .enter()
-    .append("option")
-    .attr("value", d => d)
-    .text(d => d);
-
-  dropdown.on("change", function () {
-    const selectedSeason = this.value;
-
-    // Update the chart with the selected season
-    const updatedSpec = {
-      ...vegaLiteSpec,
-      transform: [
-        { filter: `datum.season == '${selectedSeason}'` },
-        { fold: ["total_points", "total_rebounds", "total_assists"], as: ["metric", "value"] }
-      ]
-    };
-
-    vegaEmbed("#chart", updatedSpec).catch(console.error);
-  });
-});
+        // Create the chart
+        const ctx = document.getElementById('playerChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    label: 'Player Stats',
+                    data: chartData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Player Height (cm)' },
+                        beginAtZero: false
+                    },
+                    y: {
+                        title: { display: true, text: 'Player Weight (kg)' },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const data = context.raw;
+                                return `Height: ${data.x}, Weight: ${data.y}, Points: ${data.r}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
