@@ -1,7 +1,6 @@
 const csvFilePath = "NBA_Players_2010.csv";
 
 function initializeComparisonCharts() {
-  // Fetch and parse the CSV data
   fetch(csvFilePath)
     .then((response) => {
       if (!response.ok) {
@@ -18,8 +17,8 @@ function initializeComparisonCharts() {
       const processedData = parsedData
         .filter((row) => row.team_abbreviation && row.season)
         .map((row) => ({
-          team_abbreviation: row.team_abbreviation,
-          season: row.season,
+          team_abbreviation: row.team_abbreviation.trim(),
+          season: row.season.trim(),
           pts: parseFloat(row.pts || 0),
           gp: parseInt(row.gp || 0),
           reb: parseFloat(row.reb || 0),
@@ -32,11 +31,11 @@ function initializeComparisonCharts() {
       console.log("Processed Data:", processedData);
 
       // Extract unique teams and seasons
-      const teams = [...new Set(processedData.map((row) => row.team_abbreviation))].sort();
-      const seasons = [...new Set(processedData.map((row) => row.season))].sort();
+      const teams = [...new Set(processedData.map((row) => row.team_abbreviation))].filter(Boolean).sort();
+      const seasons = [...new Set(processedData.map((row) => row.season))].filter(Boolean).sort();
 
-      console.log("Teams:", teams);
-      console.log("Seasons:", seasons);
+      console.log("Unique Teams:", teams);
+      console.log("Unique Seasons:", seasons);
 
       // Populate dropdowns
       populateDropdown("teamSelect", teams);
@@ -59,6 +58,8 @@ function populateDropdown(dropdownId, options) {
     console.error(`Dropdown with ID "${dropdownId}" not found.`);
     return;
   }
+
+  dropdown.innerHTML = '<option value="">-- Select an Option --</option>'; // Clear and add default option
 
   options.forEach((optionValue) => {
     const option = document.createElement("option");
