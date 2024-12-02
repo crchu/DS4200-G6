@@ -184,7 +184,7 @@
       "width": 600,
       "height": 400,
       "data": {
-        "url": "all_seasons.csv" 
+        "url": "NBA_Players_2010.csv" 
       },
       "params": [
         {
@@ -212,7 +212,7 @@
       }
     };
     vegaEmbed("#scatterPlot", scatterPlotSpec).catch(console.error);
-    fetch('all_seasons.csv')
+    fetch('NBA_Players_2010.csv')
       .then(response => response.text())
       .then(csvData => {
         const parsedData = Papa.parse(csvData, { header: true }).data;
