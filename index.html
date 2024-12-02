@@ -47,7 +47,7 @@
        roughly 450 records and includes around 22 key attributes. The attributes are listed 
        in the following table:</p> 
 
-    <div class="center">
+        <div class="center">
         <table class="tg">
             <thead>
               <tr>
@@ -56,21 +56,115 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td class="tg-0lax">player_name</td><td class="tg-0lax">Name of the player</td></tr>
-              <tr><td class="tg-0lax">team_abbreviation</td><td class="tg-0lax">Team abbreviation</td></tr>
-              <tr><td class="tg-0lax">age</td><td class="tg-0lax">Player's age</td></tr>
-              <tr><td class="tg-0lax">player_height</td><td class="tg-0lax">Player's height (cm)</td></tr>
-              <tr><td class="tg-0lax">player_weight</td><td class="tg-0lax">Player's weight (kg)</td></tr>
-              <tr><td class="tg-0lax">draft_year</td><td class="tg-0lax">Draft year</td></tr>
-              <tr><td class="tg-0lax">draft_round</td><td class="tg-0lax">Draft round</td></tr>
-              <tr><td class="tg-0lax">pts</td><td class="tg-0lax">Points per game</td></tr>
-              <tr><td class="tg-0lax">reb</td><td class="tg-0lax">Rebounds per game</td></tr>
-              <tr><td class="tg-0lax">ast</td><td class="tg-0lax">Assists per game</td></tr>
-              <!-- Add more rows here -->
+              <tr>
+                <td class="tg-0lax">player_name</td>
+                <td class="tg-0lax">Name of the player</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">team_abbreviation</td>
+                <td class="tg-0lax">Abbreviated name of the team the player played for (at the end of the season)</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">age</td>
+                <td class="tg-0lax">Age of the player</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">player_height</td>
+                <td class="tg-0lax">Height of the player (in centimeters)</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">player_weight</td>
+                <td class="tg-0lax">Weight of the player (in kilograms)</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">college</td>
+                <td class="tg-0lax">Name of the college the player attended</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">country</td>
+                <td class="tg-0lax">Name of the country the player was born in (not necessarily the nationality)</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">draft_year</td>
+                <td class="tg-0lax">The year the player was drafted</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">draft_round</td>
+                <td class="tg-0lax">The draft round the player was picked</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">draft_number</td>
+                <td class="tg-0lax">The number at which the player was picked in his draft round</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">gp</td>
+                <td class="tg-0lax">Games played throughout the season</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">pts</td>
+                <td class="tg-0lax">Average number of points scored</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">reb</td>
+                <td class="tg-0lax">Average number of rebounds grabbed</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">ast</td>
+                <td class="tg-0lax">Average number of assists distributed</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">net_rating</td>
+                <td class="tg-0lax">Team's point differential per 100 possessions while the player is on the court</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">oreb_pct</td>
+                <td class="tg-0lax">Percentage of available offensive rebounds the player grabbed while he was on the floor</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">dreb_pct</td>
+                <td class="tg-0lax">Percentage of available defensive rebounds the player grabbed while he was on the floor</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">usg_pct</td>
+                <td class="tg-0lax">Percentage of team plays used by the player while he was on the floor (FGA + Possession Ending FTA + TO) / POSS</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">ts_pct</td>
+                <td class="tg-0lax">Measure of the player's shooting efficiency that takes into account free throws, 2 and 3 point shots (PTS / (2*(FGA + FTA)))</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">ast_pct</td>
+                <td class="tg-0lax">Percentage of teammate field goals the player assisted while he was on the floor</td>
+              </tr>
+              <tr>
+                <td class="tg-0lax">season</td>
+                <td class="tg-0lax">NBA season</td>
+              </tr>
             </tbody>
-        </table>
-    </div>
+            </table>
+        </div>
+        <p> Understanding NBA player performance is essential for evaluating individual contributions and their overall 
+            impact on the game. This analysis uses statistical data from the official NBA website's leaderboard to 
+            explore key performance metrics such as points, assists, and rebounds. These statistics serve as critical 
+            indicators of player efficiency, influencing decisions made by fans, analysts, and team managers alike. 
+            In order to better evaluate the player stats, below are interactive charts that allow for user to select 
+            which team and player stats they want to see.
+        </p>
 
+        <h3>Team and Player Selection</h3>
+        <div id="controls">
+            <label for="teamSelect">Select a Team:</label>
+            <select id="teamSelect"></select>
+      
+            <label for="playerSelect">Select a Player:</label>
+            <select id="playerSelect"></select>
+        </div>
+      
+        <h3>Player Performance Charts</h3>
+        <div id="charts"></div>
+      
+        <script src="script.js"></script>
+    
     <!-- Correlation Heatmap Section -->
     <h3>Correlation Heatmap of Player Metrics</h3>
     <p>This correlation heatmap reveals several key relationships among basketball player metrics and draft data. Players with better physical attributes, such as height and weight, are more likely to be drafted earlier, as evidenced by strong negative correlations. Offensive metrics like points per game (pts) and usage percentage (usg_pct) also show a strong positive correlation.</p>
