@@ -1,6 +1,7 @@
 const csvFilePath = "NBA_Players_2010.csv";
 
 function initializeComparisonCharts() {
+  // Fetch and parse the CSV data
   fetch(csvFilePath)
     .then((response) => {
       if (!response.ok) {
@@ -11,7 +12,9 @@ function initializeComparisonCharts() {
     .then((csvData) => {
       const parsedData = Papa.parse(csvData, { header: true }).data;
 
-      // Validate and process data
+      console.log("Raw Parsed Data:", parsedData);
+
+      // Filter and process valid rows
       const processedData = parsedData
         .filter((row) => row.team_abbreviation && row.season)
         .map((row) => ({
@@ -35,29 +38,36 @@ function initializeComparisonCharts() {
       console.log("Teams:", teams);
       console.log("Seasons:", seasons);
 
-      // Populate the dropdowns
+      // Populate dropdowns
+      populateDropdown("teamSelect", teams);
+      populateDropdown("seasonSelect", seasons);
+
+      // Add event listeners
       const teamSelect = document.getElementById("teamSelect");
       const seasonSelect = document.getElementById("seasonSelect");
 
-      teams.forEach((team) => {
-        const option = document.createElement("option");
-        option.value = team;
-        option.textContent = team;
-        teamSelect.appendChild(option);
-      });
-
-      seasons.forEach((season) => {
-        const option = document.createElement("option");
-        option.value = season;
-        option.textContent = season;
-        seasonSelect.appendChild(option);
-      });
-
-      // Event listeners for dropdown changes
       teamSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
       seasonSelect.addEventListener("change", () => updateCharts(teamSelect, seasonSelect, processedData));
     })
-    .catch((error) => console.error("Error loading or processing data:", error));
+    .catch((error) => console.error("Error initializing charts:", error));
+}
+
+function populateDropdown(dropdownId, options) {
+  const dropdown = document.getElementById(dropdownId);
+
+  if (!dropdown) {
+    console.error(`Dropdown with ID "${dropdownId}" not found.`);
+    return;
+  }
+
+  options.forEach((optionValue) => {
+    const option = document.createElement("option");
+    option.value = optionValue;
+    option.textContent = optionValue;
+    dropdown.appendChild(option);
+  });
+
+  console.log(`Dropdown "${dropdownId}" populated with options:`, options);
 }
 
 function updateCharts(teamSelect, seasonSelect, data) {
@@ -112,5 +122,5 @@ function updateCharts(teamSelect, seasonSelect, data) {
   });
 }
 
-// Initialize the charts
+// Initialize charts
 initializeComparisonCharts();
