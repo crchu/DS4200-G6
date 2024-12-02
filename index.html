@@ -124,8 +124,8 @@
         });
     </script>
 
-  <h3>Average Metric Comparison for Selected Teams</h3>
-
+  <h3>Team Comparison</h3>
+    
   <div id="controls">
     <label for="compareSelect">Select a Team to Compare Against Celtics:</label>
     <select id="compareSelect">
@@ -133,16 +133,11 @@
     </select>
   </div>
 
-  <div id="metricControls">
-    <label for="metricSelect">Select a Metric:</label>
-    <select id="metricSelect">
-      <option value="pts">Points</option>
-      <option value="reb">Rebounds</option>
-      <option value="ast">Assists</option>
-    </select>
+  <div id="charts" style="display: flex; justify-content: space-around;">
+    <div id="chart-1"></div>
+    <div id="chart-2"></div>
+    <div id="chart-3"></div>
   </div>
-
-  <div id="barChart"></div>
 
   <script src="teams.js"></script>
 </body>
