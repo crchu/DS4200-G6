@@ -1,26 +1,14 @@
-const csvFilePath = "NBA_Players_2010.csv";
-
-const margin = { top: 40, right: 30, bottom: 60, left: 50 },
-      width = 300 - margin.left - margin.right,
-      height = 300 - margin.top - margin.bottom;
+const csvFilePath = "all_seasons 4.csv";
 
 d3.csv(csvFilePath).then(data => {
-  // Debug: Log raw data
-  console.log("Raw Data:", data);
-
-  // Preprocess data
-  data.forEach(d => {
-    d.pts = +d.pts;
-    d.reb = +d.reb;
-    d.ast = +d.ast;
-    d.gp = +d.gp;
-  });
+  // Debugging: Log raw data
+  console.log("Loaded Data:", data);
 
   // Extract unique teams and seasons
-  const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).sort();
-  const seasons = Array.from(new Set(data.map(d => d.season))).sort();
+  const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).filter(Boolean).sort();
+  const seasons = Array.from(new Set(data.map(d => d.season))).filter(Boolean).sort();
 
-  // Debug: Log teams and seasons
+  // Debugging: Log extracted values
   console.log("Teams:", teams);
   console.log("Seasons:", seasons);
 
@@ -29,86 +17,26 @@ d3.csv(csvFilePath).then(data => {
 
   // Populate the team dropdown
   teams.forEach(team => {
-    if (team) { // Ensure no empty team entries
+    if (team) {
+      console.log("Adding team option:", team); // Log every team added
       teamSelect.append("option").text(team).attr("value", team);
     }
   });
 
   // Populate the season dropdown
   seasons.forEach(season => {
-    if (season) { // Ensure no empty season entries
+    if (season) {
+      console.log("Adding season option:", season); // Log every season added
       seasonSelect.append("option").text(season).attr("value", season);
     }
   });
-
-  // Debug: Check dropdown contents
-  console.log("Team Dropdown:", teamSelect.node());
-  console.log("Season Dropdown:", seasonSelect.node());
-
-  // Update the charts when a team and season are selected
-  function updateCharts(selectedTeam, selectedSeason) {
-    const filteredData = data.filter(d => d.team_abbreviation === selectedTeam && d.season === selectedSeason);
-
-    if (filteredData.length === 0) {
-      console.warn("No data available for the selected team and season.");
-      d3.select("#charts").text("No data available.");
-      return;
-    }
-
-    d3.select("#charts").selectAll("*").remove(); // Clear existing charts
-
-    // Example metric: Total Points
-    const totalPoints = filteredData.reduce((sum, d) => sum + d.pts, 0);
-
-    const svg = d3.select("#charts")
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // Define scales
-    const x = d3.scaleBand()
-      .domain(filteredData.map(d => d.player_name))
-      .range([0, width])
-      .padding(0.1);
-
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(filteredData, d => d.pts)]).nice()
-      .range([height, 0]);
-
-    // Add x-axis
-    svg.append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
-      .selectAll("text")
-      .style("text-anchor", "middle")
-      .style("font-size", "10px");
-
-    // Add y-axis
-    svg.append("g")
-      .call(d3.axisLeft(y).ticks(5).tickSize(-width))
-      .selectAll("line")
-      .style("stroke", "#e0e0e0");
-
-    // Add bars
-    svg.selectAll("rect")
-      .data(filteredData)
-      .enter()
-      .append("rect")
-      .attr("x", d => x(d.player_name))
-      .attr("y", d => y(d.pts))
-      .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d.pts))
-      .attr("fill", "steelblue");
-  }
 
   // Handle dropdown change
   teamSelect.on("change", function () {
     const selectedTeam = this.value;
     const selectedSeason = seasonSelect.property("value");
     if (selectedTeam && selectedSeason) {
-      updateCharts(selectedTeam, selectedSeason);
+      updateCharts(selectedTeam, selectedSeason, data);
     }
   });
 
@@ -116,16 +44,102 @@ d3.csv(csvFilePath).then(data => {
     const selectedSeason = this.value;
     const selectedTeam = teamSelect.property("value");
     if (selectedTeam && selectedSeason) {
-      updateCharts(selectedTeam, selectedSeason);
+      updateCharts(selectedTeam, selectedSeason, data);
     }
   });
 
-  // Initialize charts with the first team and season
-  const initialTeam = teams[0];
-  const initialSeason = seasons[0];
-  teamSelect.property("value", initialTeam);
-  seasonSelect.property("value", initialSeason);
-  updateCharts(initialTeam, initialSeason);
+  // Initialize with the first team and season
+  if (teams.length > 0 && seasons.length > 0) {
+    teamSelect.property("value", teams[0]);
+    seasonSelect.property("value", seasons[0]);
+    updateCharts(teams[0], seasons[0], data);
+  } else {
+    console.error("No valid teams or seasons found.");
+  }
 }).catch(error => {
   console.error("Error loading CSV file:", error);
 });
+
+// Update charts function
+function updateCharts(team, season, data) {
+  const filteredData = data.filter(d => d.team_abbreviation === team && d.season === season);
+
+  if (filteredData.length === 0) {
+    d3.select("#charts").text("No data available for the selected team and season.");
+    return;
+  }
+
+  d3.select("#charts").selectAll("*").remove(); // Clear existing charts
+
+  // Metric 1: Total Points
+  const totalPoints = filteredData.reduce((sum, d) => sum + (+d.pts || 0), 0);
+
+  // Metric 2: Total Rebounds
+  const totalRebounds = filteredData.reduce((sum, d) => sum + (+d.reb || 0), 0);
+
+  // Metric 3: Total Assists
+  const totalAssists = filteredData.reduce((sum, d) => sum + (+d.ast || 0), 0);
+
+  // Bar Chart for Total Points, Rebounds, and Assists
+  const metrics = [
+    { label: "Total Points", value: totalPoints },
+    { label: "Total Rebounds", value: totalRebounds },
+    { label: "Total Assists", value: totalAssists }
+  ];
+
+  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const width = 400 - margin.left - margin.right;
+  const height = 300 - margin.top - margin.bottom;
+
+  const svg = d3.select("#charts")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleBand()
+    .domain(metrics.map(d => d.label))
+    .range([0, width])
+    .padding(0.1);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(metrics, d => d.value)]).nice()
+    .range([height, 0]);
+
+  // X Axis
+  svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+    .attr("transform", "rotate(-45)")
+    .style("text-anchor", "end");
+
+  // Y Axis
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  // Bars
+  svg.selectAll(".bar")
+    .data(metrics)
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("x", d => x(d.label))
+    .attr("y", d => y(d.value))
+    .attr("width", x.bandwidth())
+    .attr("height", d => height - y(d.value))
+    .attr("fill", "steelblue");
+
+  // Add labels to bars
+  svg.selectAll(".label")
+    .data(metrics)
+    .enter()
+    .append("text")
+    .attr("x", d => x(d.label) + x.bandwidth() / 2)
+    .attr("y", d => y(d.value) - 5)
+    .attr("text-anchor", "middle")
+    .style("fill", "black")
+    .style("font-size", "12px")
+    .text(d => d.value);
+}
