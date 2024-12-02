@@ -157,6 +157,77 @@
           <label for="playerSelect">Select a Player:</label>
           <select id="playerSelect"></select>
         </div>
+    <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team and Player Selection</title>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+  <h3>Team and Player Selection</h3>
+  <div id="controls">
+    <label for="teamSelect">Select a Team:</label>
+    <select id="teamSelect"></select>
+    
+    <label for="playerSelect">Select a Player:</label>
+    <select id="playerSelect"></select>
+  </div>
+
+  <div id="scatterPlot"></div>
+
+  <script>
+    const scatterPlotSpec = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": "Average Points Comparison for Selected Teams",
+      "width": 600,
+      "height": 400,
+      "data": {
+        "url": "all_seasons.csv" 
+      },
+      "params": [
+        {
+          "name": "team_select",
+          "select": {
+            "type": "point",
+            "fields": ["team_abbreviation"],
+            "bind": {
+              "input": "select",
+              "options": []  
+            }
+          },
+          "value": null
+        }
+      ],
+      "mark": "circle",
+      "encoding": {
+        "x": {"field": "team_abbreviation", "type": "nominal", "title": "Team"},
+        "y": {"aggregate": "average", "field": "pts", "type": "quantitative", "title": "Average Points"},
+        "color": {"field": "team_abbreviation", "type": "nominal", "title": "Team"},
+        "tooltip": [
+          {"field": "team_abbreviation", "type": "nominal"},
+          {"aggregate": "average", "field": "pts", "type": "quantitative"}
+        ]
+      }
+    };
+    vegaEmbed("#scatterPlot", scatterPlotSpec).catch(console.error);
+    fetch('all_seasons.csv')
+      .then(response => response.text())
+      .then(csvData => {
+        const parsedData = Papa.parse(csvData, { header: true }).data;
+        const teams = [...new Set(parsedData.map(row => row.team_abbreviation))].filter(Boolean);
+        const teamSelect = document.getElementById('teamSelect');
+        teams.forEach(team => {
+          const option = document.createElement('option');
+          option.value = team;
+          option.text = team;
+          teamSelect.add(option);
+        });
+      });
+  </script>
+</body>
+</html>
       
         <h3>Player Performance Charts</h3>
         <div id="charts"></div>
