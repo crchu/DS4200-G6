@@ -1,7 +1,7 @@
 // Load and process data
 async function fetchData() {
     // Fetch the CSV file
-    const response = await fetch('all_seasons_8.csv');
+    const response = await fetch('NBA_Players_2010.csv');
     const csvText = await response.text();
 
     // Parse the CSV into a usable format
