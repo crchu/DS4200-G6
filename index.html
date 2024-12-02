@@ -163,23 +163,21 @@
           <select id="playerSelect"></select>
         </div>
       
-        <h3>Select Team and Season</h3>
-        <div id="controls">
-            <label for="teamSelect">Select a Team:</label>
-            <select id="teamSelect">
-            <option value="">-- Select a Team --</option>
-            </select>
+        <h3>Team Comparison</h3>
+  <div id="controls">
+    <label for="compareSelect">Select a Team to Compare Against Celtics:</label>
+    <select id="compareSelect">
+      <option value="">-- Select a Team --</option>
+    </select>
+  </div>
 
-        <label for="seasonSelect">Select a Season:</label>
-        <select id="seasonSelect">
-            <option value="">-- Select a Season --</option>
-        </select>
-    </div>
+  <div id="charts" style="display: flex; justify-content: space-around;">
+    <div id="chart-1"></div>
+    <div id="chart-2"></div>
+    <div id="chart-3"></div>
+  </div>
 
-    <h3>Team Performance Charts</h3>
-    <div id="charts" style="display: flex; justify-content: space-around;"></div>
-
-    <script src="teams.js"></script>
+  <script src="teams.js"></script>
 
         <script src="script.js"></script>
         <script src="shrey's visualizations.js"></script>
