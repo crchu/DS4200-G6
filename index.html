@@ -180,7 +180,13 @@
 </head>
 <body>
 
+  <h3>Average Points Comparison for Selected Teams</h3>
+
+  <!-- Chart container -->
+  <div id="barChart"></div>
+
   <script>
+    // Ensure the CSV file has the correct extension
     const csvFilePath = "NBA_Players_2010.csv"; 
 
     fetch(csvFilePath)
@@ -193,30 +199,6 @@
         const validData = parsedData.filter(row => row.team_abbreviation && row.player_name);
 
         const teams = [...new Set(validData.map(row => row.team_abbreviation))].sort();
-        const teamSelect = document.getElementById("teamSelect");
-        teams.forEach(team => {
-          const option = document.createElement("option");
-          option.value = team;
-          option.textContent = team;
-          teamSelect.appendChild(option);
-        });
-
-        const playerSelect = document.getElementById("playerSelect");
-        teamSelect.addEventListener("change", () => {
-          const selectedTeam = teamSelect.value;
-          const players = validData
-            .filter(row => row.team_abbreviation === selectedTeam)
-            .map(row => row.player_name)
-            .sort();
-
-          playerSelect.innerHTML = '<option value="">-- Select a Player --</option>';
-          players.forEach(player => {
-            const option = document.createElement("option");
-            option.value = player;
-            option.textContent = player;
-            playerSelect.appendChild(option);
-          });
-        });
 
         const barChartSpec = {
           "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -267,7 +249,9 @@
         };
 
         // Render the bar chart
-        vegaEmbed("#barChart", barChartSpec).catch(console.error);
+        vegaEmbed("#barChart", barChartSpec)
+          .then(() => console.log("Chart rendered successfully!"))
+          .catch(console.error);
       })
       .catch(error => console.error("Error loading or parsing CSV:", error));
   </script>
