@@ -4,15 +4,18 @@ d3.csv(csvFilePath).then(data => {
   // Step 1: Preprocess the data
   const processedData = data.map(d => ({
     season: d.season,
-    team_abbreviation: d.team_abbreviation.trim(), // Ensure no extra spaces
+    team_abbreviation: d.team_abbreviation?.trim(), // Ensure no spaces or nulls
     pts: +d.pts,
     reb: +d.reb,
     ast: +d.ast
   }));
 
+  // Filter out any rows without a valid team abbreviation
+  const filteredData = processedData.filter(d => d.team_abbreviation);
+
   // Step 2: Aggregate data by team and season
   const aggregatedData = Array.from(
-    d3.group(processedData, d => `${d.season}-${d.team_abbreviation}`),
+    d3.group(filteredData, d => `${d.season}-${d.team_abbreviation}`),
     ([key, values]) => {
       const [season, team_abbreviation] = key.split("-");
       return {
@@ -24,6 +27,9 @@ d3.csv(csvFilePath).then(data => {
       };
     }
   );
+
+  // Debugging: Check the processed data
+  console.log("Aggregated Data:", aggregatedData);
 
   // Step 3: Generate the improved Vega-Lite spec
   const vegaLiteSpec = {
