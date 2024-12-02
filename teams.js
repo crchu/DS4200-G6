@@ -1,65 +1,83 @@
-// Load and process data
 async function fetchData() {
-    // Fetch the CSV file
-    const response = await fetch('NBA_Players_2010.csv');
-    const csvText = await response.text();
+    try {
+        // Fetch the CSV file
+        const response = await fetch('NBA_Players_2010\.csv');
+        if (!response.ok) throw new Error('Failed to load CSV file');
+        const csvText = await response.text();
 
-    // Parse the CSV into a usable format
-    const data = Papa.parse(csvText, { header: true }).data;
+        // Parse the CSV
+        const data = Papa.parse(csvText, { header: true }).data;
+        console.log("Loaded Data:", data); // Debugging
 
-    // Process data to calculate total stats for each team per season
-    const teamSeasonStats = {};
+        // Process data to calculate total stats for each team per season
+        const teamSeasonStats = {};
 
-    data.forEach(player => {
-        const team = player.team_abbreviation;
-        const season = player.season;
+        data.forEach(player => {
+            const team = player.team_abbreviation;
+            const season = player.season;
 
-        // Ensure team and season exist in the data structure
-        if (!teamSeasonStats[season]) teamSeasonStats[season] = {};
-        if (!teamSeasonStats[season][team]) {
-            teamSeasonStats[season][team] = { points: 0, assists: 0, rebounds: 0 };
-        }
+            if (!team || !season) return; // Skip invalid rows
 
-        // Calculate total points, assists, and rebounds
-        const gamesPlayed = parseInt(player.gp) || 0;
-        const points = parseFloat(player.pts) || 0;
-        const assists = parseFloat(player.ast) || 0;
-        const rebounds = parseFloat(player.reb) || 0;
+            // Initialize stats for this team and season
+            if (!teamSeasonStats[season]) teamSeasonStats[season] = {};
+            if (!teamSeasonStats[season][team]) {
+                teamSeasonStats[season][team] = { points: 0, assists: 0, rebounds: 0 };
+            }
 
-        teamSeasonStats[season][team].points += points * gamesPlayed;
-        teamSeasonStats[season][team].assists += assists * gamesPlayed;
-        teamSeasonStats[season][team].rebounds += rebounds * gamesPlayed;
-    });
+            // Calculate total points, assists, and rebounds
+            const gamesPlayed = parseInt(player.gp) || 0;
+            const points = parseFloat(player.pts) || 0;
+            const assists = parseFloat(player.ast) || 0;
+            const rebounds = parseFloat(player.reb) || 0;
 
-    return teamSeasonStats;
+            teamSeasonStats[season][team].points += points * gamesPlayed;
+            teamSeasonStats[season][team].assists += assists * gamesPlayed;
+            teamSeasonStats[season][team].rebounds += rebounds * gamesPlayed;
+        });
+
+        console.log("Processed Team-Season Stats:", teamSeasonStats); // Debugging
+        return teamSeasonStats;
+    } catch (error) {
+        console.error("Error loading or processing data:", error);
+    }
 }
 
-// Populate dropdowns
 function populateDropdowns(teamSeasonStats) {
-    const seasons = Object.keys(teamSeasonStats);
-    const teams = [...new Set(Object.values(teamSeasonStats).flatMap(season => Object.keys(season)))];
+    try {
+        const seasons = Object.keys(teamSeasonStats);
+        const teams = [...new Set(Object.values(teamSeasonStats).flatMap(season => Object.keys(season)))];
 
-    // Populate season dropdown
-    const seasonDropdown = document.getElementById('seasonDropdown');
-    seasons.forEach(season => {
-        const option = document.createElement('option');
-        option.value = season;
-        option.textContent = season;
-        seasonDropdown.appendChild(option);
-    });
+        console.log("Seasons:", seasons); // Debugging
+        console.log("Teams:", teams); // Debugging
 
-    // Populate team dropdown
-    const teamDropdown = document.getElementById('teamDropdown');
-    teams.forEach(team => {
-        const option = document.createElement('option');
-        option.value = team;
-        option.textContent = team;
-        teamDropdown.appendChild(option);
-    });
+        // Populate season dropdown
+        const seasonDropdown = document.getElementById('seasonDropdown');
+        seasons.forEach(season => {
+            const option = document.createElement('option');
+            option.value = season;
+            option.textContent = season;
+            seasonDropdown.appendChild(option);
+        });
+
+        // Populate team dropdown
+        const teamDropdown = document.getElementById('teamDropdown');
+        teams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team;
+            option.textContent = team;
+            teamDropdown.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error populating dropdowns:", error);
+    }
 }
 
-// Render the chart
 function renderChart(teamSeasonStats, selectedSeason, selectedTeam) {
+    if (!teamSeasonStats[selectedSeason] || !teamSeasonStats[selectedSeason][selectedTeam]) {
+        console.error("Invalid selection:", selectedSeason, selectedTeam);
+        return;
+    }
+
     const ctx = document.getElementById('teamChart').getContext('2d');
 
     // Extract data for the selected team and season
@@ -92,9 +110,9 @@ function renderChart(teamSeasonStats, selectedSeason, selectedTeam) {
     }
 }
 
-// Initialize the app
 async function init() {
     const teamSeasonStats = await fetchData();
+    if (!teamSeasonStats) return;
 
     populateDropdowns(teamSeasonStats);
 
@@ -115,8 +133,9 @@ async function init() {
     });
 
     // Initial render
-    renderChart(teamSeasonStats, seasonDropdown.value, teamDropdown.value);
+    const defaultSeason = seasonDropdown.value || Object.keys(teamSeasonStats)[0];
+    const defaultTeam = teamDropdown.value || Object.keys(teamSeasonStats[defaultSeason])[0];
+    renderChart(teamSeasonStats, defaultSeason, defaultTeam);
 }
 
-// Run the app
 init();
