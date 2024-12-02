@@ -166,13 +166,12 @@
 </body>
 </html>
 
-    <h3>Average Points Comparison for Selected Teams</h3>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Team and Player Selection</title>
+  <title>Team and Player Comparison</title>
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
@@ -180,13 +179,21 @@
 </head>
 <body>
 
+  <h1>NBA Player Stats Analysis</h1>
+
   <h3>Average Points Comparison for Selected Teams</h3>
+
+  <div id="controls">
+    <label for="compareSelect">Select a Team to Compare Against Celtics:</label>
+    <select id="compareSelect">
+      <option value="">-- Select a Team --</option>
+    </select>
+  </div>
 
   <!-- Chart container -->
   <div id="barChart"></div>
 
   <script>
-    // Ensure the CSV file has the correct extension
     const csvFilePath = "NBA_Players_2010.csv"; 
 
     fetch(csvFilePath)
@@ -196,62 +203,77 @@
 
         console.log("Parsed Data:", parsedData);
 
-        const validData = parsedData.filter(row => row.team_abbreviation && row.player_name);
+        const validData = parsedData.filter(row => row.team_abbreviation && row.player_name && row.pts);
 
         const teams = [...new Set(validData.map(row => row.team_abbreviation))].sort();
-
-        const barChartSpec = {
-          "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-          "title": "Points Comparison (Selected Team vs Celtics)",
-          "width": 600,
-          "height": 400,
-          "data": {
-            "values": validData
-          },
-          "transform": [
-            {
-              "filter": {
-                "or": [
-                  {"field": "team_abbreviation", "equal": "BOS"}, 
-                  {"field": "team_abbreviation", "oneOf": teams} 
-                ]
-              }
-            },
-            {
-              "aggregate": [
-                {"op": "mean", "field": "pts", "as": "average_points"}
-              ],
-              "groupby": ["team_abbreviation"]
-            }
-          ],
-          "mark": "bar",
-          "encoding": {
-            "x": {
-              "field": "team_abbreviation",
-              "type": "nominal",
-              "title": "Team"
-            },
-            "y": {
-              "field": "average_points",
-              "type": "quantitative",
-              "title": "Average Points"
-            },
-            "color": {
-              "field": "team_abbreviation",
-              "type": "nominal",
-              "title": "Team"
-            },
-            "tooltip": [
-              {"field": "team_abbreviation", "type": "nominal", "title": "Team"},
-              {"field": "average_points", "type": "quantitative", "title": "Average Points"}
-            ]
+        const compareSelect = document.getElementById("compareSelect");
+        teams.forEach(team => {
+          if (team !== "BOS") { // Exclude Celtics from the dropdown
+            const option = document.createElement("option");
+            option.value = team;
+            option.textContent = team;
+            compareSelect.appendChild(option);
           }
-        };
+        });
 
-        // Render the bar chart
-        vegaEmbed("#barChart", barChartSpec)
-          .then(() => console.log("Chart rendered successfully!"))
-          .catch(console.error);
+        compareSelect.addEventListener("change", () => {
+          const selectedTeam = compareSelect.value;
+          if (selectedTeam) {
+            renderComparisonChart(selectedTeam, validData);
+          }
+        });
+
+        function renderComparisonChart(selectedTeam, data) {
+          const barChartSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "title": `Points Comparison: Celtics vs ${selectedTeam}`,
+            "width": 600,
+            "height": 400,
+            "data": {
+              "values": data
+            },
+            "transform": [
+              {
+                "filter": {
+                  "or": [
+                    { "field": "team_abbreviation", "equal": "BOS" }, // Celtics
+                    { "field": "team_abbreviation", "equal": selectedTeam } // Selected team
+                  ]
+                }
+              },
+              {
+                "aggregate": [
+                  { "op": "mean", "field": "pts", "as": "average_points" }
+                ],
+                "groupby": ["team_abbreviation"]
+              }
+            ],
+            "mark": "bar",
+            "encoding": {
+              "x": {
+                "field": "team_abbreviation",
+                "type": "nominal",
+                "title": "Team"
+              },
+              "y": {
+                "field": "average_points",
+                "type": "quantitative",
+                "title": "Average Points"
+              },
+              "color": {
+                "field": "team_abbreviation",
+                "type": "nominal",
+                "title": "Team"
+              },
+              "tooltip": [
+                { "field": "team_abbreviation", "type": "nominal", "title": "Team" },
+                { "field": "average_points", "type": "quantitative", "title": "Average Points" }
+              ]
+            }
+          };
+
+          vegaEmbed("#barChart", barChartSpec).catch(console.error);
+        }
       })
       .catch(error => console.error("Error loading or parsing CSV:", error));
   </script>
