@@ -12,98 +12,75 @@ const svg = d3.select("#chart")
 
 // Scales
 const xScale = d3.scaleBand().range([0, width]).padding(0.2);
+const xSubScale = d3.scaleBand().padding(0.05);
 const yScale = d3.scaleLinear().range([height, 0]);
 const colorScale = d3.scaleOrdinal().range(d3.schemeCategory10);
 
-// Axes
-const xAxisGroup = svg.append("g").attr("transform", `translate(0,${height})`);
-const yAxisGroup = svg.append("g");
-
-// Tooltip for interaction
-const tooltip = d3.select("body")
-    .append("div")
-    .style("position", "absolute")
-    .style("background", "rgba(255, 255, 255, 0.9)")
-    .style("border", "1px solid #ccc")
-    .style("padding", "10px")
-    .style("border-radius", "5px")
-    .style("pointer-events", "none")
-    .style("visibility", "hidden");
-
+// Load and process data
 d3.csv("NBA_Players_2010.csv").then(data => {
-    console.log("Data Loaded:", data);
-
-    // Data preparation
     data.forEach(d => {
         d.pts = +d.pts * +d.gp; // Total points
         d.reb = +d.reb * +d.gp; // Total rebounds
         d.ast = +d.ast * +d.gp; // Total assists
     });
 
-    const groupedData = d3.rollups(
+    // Group data by season
+    const groupedBySeason = d3.rollups(
         data,
         v => ({
             pts: d3.sum(v, d => d.pts),
             reb: d3.sum(v, d => d.reb),
             ast: d3.sum(v, d => d.ast),
         }),
-        d => d.team_abbreviation,
         d => d.season
     );
 
-    console.log("Grouped Data:", groupedData);
-
-    const flattenedData = [];
-    groupedData.forEach(([team, seasons]) => {
-        seasons.forEach(([season, metrics]) => {
-            flattenedData.push({
-                team,
-                season,
-                ...metrics
-            });
-        });
-    });
-
-    console.log("Flattened Data:", flattenedData);
+    // Flatten grouped data
+    const flattenedData = groupedBySeason.map(([season, metrics]) => ({
+        season,
+        ...metrics
+    }));
 
     const metrics = ["pts", "reb", "ast"];
-    const stackedData = d3.stack()
-        .keys(metrics)
-        (flattenedData);
 
-    console.log("Stacked Data:", stackedData);
+    // Set scales
+    xScale.domain(flattenedData.map(d => d.season));
+    xSubScale.domain(metrics).range([0, xScale.bandwidth()]);
+    yScale.domain([0, d3.max(flattenedData, d => Math.max(d.pts, d.reb, d.ast))]);
 
-    const seasons = Array.from(new Set(flattenedData.map(d => d.season))).sort();
-    xScale.domain(flattenedData.map(d => d.season + " - " + d.team));
-    yScale.domain([0, d3.max(flattenedData, d => d.pts + d.reb + d.ast)]);
-    colorScale.domain(metrics);
-
-    xAxisGroup.call(d3.axisBottom(xScale).tickFormat(d => d.split(" - ")[0]).tickSize(0))
+    // Draw axes
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xScale))
         .selectAll("text")
         .attr("transform", "rotate(-45)")
         .style("text-anchor", "end")
-        .style("font-size", "10px");
-    yAxisGroup.call(d3.axisLeft(yScale).ticks(10));
+        .style("font-size", "12px");
 
     svg.append("g")
+        .call(d3.axisLeft(yScale).ticks(10))
+        .style("font-size", "12px");
+
+    // Draw bars
+    svg.append("g")
         .selectAll("g")
-        .data(stackedData)
+        .data(flattenedData)
         .enter()
         .append("g")
-        .attr("fill", d => colorScale(d.key))
+        .attr("transform", d => `translate(${xScale(d.season)},0)`)
         .selectAll("rect")
-        .data(d => d)
+        .data(d => metrics.map(key => ({ key, value: d[key] })))
         .enter()
         .append("rect")
-        .attr("x", d => xScale(d.data.season + " - " + d.data.team))
-        .attr("y", d => yScale(d[1]))
-        .attr("height", d => yScale(d[0]) - yScale(d[1]))
-        .attr("width", xScale.bandwidth())
+        .attr("x", d => xSubScale(d.key))
+        .attr("y", d => yScale(d.value))
+        .attr("width", xSubScale.bandwidth())
+        .attr("height", d => height - yScale(d.value))
+        .attr("fill", d => colorScale(d.key))
         .on("mouseover", function (event, d) {
-            const value = d[1] - d[0];
             d3.select("#tooltip")
                 .style("visibility", "visible")
-                .html(`Value: ${value}`)
+                .html(`${d.key.toUpperCase()}: ${d.value}`)
                 .style("top", `${event.pageY - 50}px`)
                 .style("left", `${event.pageX + 10}px`);
         })
@@ -115,4 +92,25 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .on("mouseout", () => {
             d3.select("#tooltip").style("visibility", "hidden");
         });
+
+    // Add legend
+    const legend = svg.append("g")
+        .attr("transform", `translate(${width + 20},0)`)
+        .selectAll("g")
+        .data(metrics)
+        .enter()
+        .append("g")
+        .attr("transform", (d, i) => `translate(0,${i * 20})`);
+
+    legend.append("rect")
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("fill", d => colorScale(d));
+
+    legend.append("text")
+        .attr("x", 24)
+        .attr("y", 9)
+        .attr("dy", "0.35em")
+        .style("font-size", "12px")
+        .text(d => d.charAt(0).toUpperCase() + d.slice(1));
 });
