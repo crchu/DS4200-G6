@@ -1,66 +1,122 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Stats Chart</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <canvas id="playerChart" width="800" height="400"></canvas>
-    <script>
-        // Sample data (replace with your CSV processing logic)
-        const data = [
-            { height: 193.04, weight: 94.8, points: 3.9 },
-            { height: 190.5, weight: 86.18, points: 3.8 },
-            { height: 203.2, weight: 103.42, points: 8.3 },
-            { height: 203.2, weight: 102.06, points: 10.2 },
-            { height: 213.36, weight: 119.75, points: 2.8 }
-        ];
+// Load and process data
+async function fetchData() {
+    // Fetch the CSV file
+    const response = await fetch('all_seasons_8.csv');
+    const csvText = await response.text();
 
-        // Transform data for the scatter plot
-        const chartData = data.map(player => ({
-            x: player.height,
-            y: player.weight,
-            r: player.points // Use points to determine bubble size
-        }));
+    // Parse the CSV into a usable format
+    const data = Papa.parse(csvText, { header: true }).data;
 
-        // Create the chart
-        const ctx = document.getElementById('playerChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bubble',
-            data: {
-                datasets: [{
-                    label: 'Player Stats',
-                    data: chartData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
+    // Process data to calculate total stats for each team per season
+    const teamSeasonStats = {};
+
+    data.forEach(player => {
+        const team = player.team_abbreviation;
+        const season = player.season;
+
+        // Ensure team and season exist in the data structure
+        if (!teamSeasonStats[season]) teamSeasonStats[season] = {};
+        if (!teamSeasonStats[season][team]) {
+            teamSeasonStats[season][team] = { points: 0, assists: 0, rebounds: 0 };
+        }
+
+        // Calculate total points, assists, and rebounds
+        const gamesPlayed = parseInt(player.gp) || 0;
+        const points = parseFloat(player.pts) || 0;
+        const assists = parseFloat(player.ast) || 0;
+        const rebounds = parseFloat(player.reb) || 0;
+
+        teamSeasonStats[season][team].points += points * gamesPlayed;
+        teamSeasonStats[season][team].assists += assists * gamesPlayed;
+        teamSeasonStats[season][team].rebounds += rebounds * gamesPlayed;
+    });
+
+    return teamSeasonStats;
+}
+
+// Populate dropdowns
+function populateDropdowns(teamSeasonStats) {
+    const seasons = Object.keys(teamSeasonStats);
+    const teams = [...new Set(Object.values(teamSeasonStats).flatMap(season => Object.keys(season)))];
+
+    // Populate season dropdown
+    const seasonDropdown = document.getElementById('seasonDropdown');
+    seasons.forEach(season => {
+        const option = document.createElement('option');
+        option.value = season;
+        option.textContent = season;
+        seasonDropdown.appendChild(option);
+    });
+
+    // Populate team dropdown
+    const teamDropdown = document.getElementById('teamDropdown');
+    teams.forEach(team => {
+        const option = document.createElement('option');
+        option.value = team;
+        option.textContent = team;
+        teamDropdown.appendChild(option);
+    });
+}
+
+// Render the chart
+function renderChart(teamSeasonStats, selectedSeason, selectedTeam) {
+    const ctx = document.getElementById('teamChart').getContext('2d');
+
+    // Extract data for the selected team and season
+    const teamStats = teamSeasonStats[selectedSeason][selectedTeam];
+    const data = {
+        labels: ['Points', 'Assists', 'Rebounds'],
+        datasets: [{
+            label: `${selectedTeam} (${selectedSeason})`,
+            data: [teamStats.points, teamStats.assists, teamStats.rebounds],
+            backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)'],
+            borderColor: ['rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'],
+            borderWidth: 1
+        }]
+    };
+
+    // Create or update the chart
+    if (window.teamChart) {
+        window.teamChart.data = data;
+        window.teamChart.update();
+    } else {
+        window.teamChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
             options: {
                 scales: {
-                    x: {
-                        title: { display: true, text: 'Player Height (cm)' },
-                        beginAtZero: false
-                    },
-                    y: {
-                        title: { display: true, text: 'Player Weight (kg)' },
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const data = context.raw;
-                                return `Height: ${data.x}, Weight: ${data.y}, Points: ${data.r}`;
-                            }
-                        }
-                    }
+                    y: { beginAtZero: true }
                 }
             }
         });
-    </script>
-</body>
-</html>
+    }
+}
+
+// Initialize the app
+async function init() {
+    const teamSeasonStats = await fetchData();
+
+    populateDropdowns(teamSeasonStats);
+
+    // Event listeners for dropdown changes
+    const seasonDropdown = document.getElementById('seasonDropdown');
+    const teamDropdown = document.getElementById('teamDropdown');
+
+    seasonDropdown.addEventListener('change', () => {
+        const selectedSeason = seasonDropdown.value;
+        const selectedTeam = teamDropdown.value;
+        renderChart(teamSeasonStats, selectedSeason, selectedTeam);
+    });
+
+    teamDropdown.addEventListener('change', () => {
+        const selectedSeason = seasonDropdown.value;
+        const selectedTeam = teamDropdown.value;
+        renderChart(teamSeasonStats, selectedSeason, selectedTeam);
+    });
+
+    // Initial render
+    renderChart(teamSeasonStats, seasonDropdown.value, teamDropdown.value);
+}
+
+// Run the app
+init();
