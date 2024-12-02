@@ -1,141 +1,122 @@
-async function fetchData() {
-    try {
-        // Fetch the CSV file
-        const response = await fetch('NBA_Players_2010.csv');
-        if (!response.ok) throw new Error('Failed to load CSV file');
-        const csvText = await response.text();
+const margin = { top: 40, right: 30, bottom: 60, left: 50 },
+      width = 300 - margin.left - margin.right,
+      height = 300 - margin.top - margin.bottom;
 
-        // Parse the CSV
-        const data = Papa.parse(csvText, { header: true }).data;
-        console.log("Loaded Data:", data); // Debugging
+const attributes = ['pts', 'reb', 'ast', 'gp'];
+const titles = ["Total Points Scored", "Total Rebounds", "Total Assists", "Games Played"];
+const yLabels = ["Total Points", "Total Rebounds", "Total Assists", "Games Played"];
 
-        // Process data to calculate total stats for each team per season
-        const teamSeasonStats = {};
+d3.csv("all_seasons_9.csv").then(data => {
+  // Preprocess the data
+  data.forEach(d => {
+    d.pts = +d.pts * d.gp; // Total points
+    d.reb = +d.reb * d.gp; // Total rebounds
+    d.ast = +d.ast * d.gp; // Total assists
+    d.gp = +d.gp; // Games played
+  });
 
-        data.forEach(player => {
-            const team = player.team_abbreviation;
-            const season = player.season;
+  // Extract unique teams and seasons
+  const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).sort();
+  const seasons = Array.from(new Set(data.map(d => d.season))).sort();
 
-            if (!team || !season) return; // Skip invalid rows
+  // Populate the dropdowns
+  const teamSelect = d3.select("#teamSelect");
+  const seasonSelect = d3.select("#seasonSelect");
 
-            // Initialize stats for this team and season
-            if (!teamSeasonStats[season]) teamSeasonStats[season] = {};
-            if (!teamSeasonStats[season][team]) {
-                teamSeasonStats[season][team] = { points: 0, assists: 0, rebounds: 0 };
-            }
+  teams.forEach(team => {
+    teamSelect.append("option").text(team).attr("value", team);
+  });
 
-            // Calculate total points, assists, and rebounds
-            const gamesPlayed = parseInt(player.gp) || 0;
-            const points = parseFloat(player.pts) || 0;
-            const assists = parseFloat(player.ast) || 0;
-            const rebounds = parseFloat(player.reb) || 0;
+  seasons.forEach(season => {
+    seasonSelect.append("option").text(season).attr("value", season);
+  });
 
-            teamSeasonStats[season][team].points += points * gamesPlayed;
-            teamSeasonStats[season][team].assists += assists * gamesPlayed;
-            teamSeasonStats[season][team].rebounds += rebounds * gamesPlayed;
-        });
+  // Update the charts when a team and season are selected
+  function updateCharts(selectedTeam, selectedSeason) {
+    const filteredData = data.filter(d => d.team_abbreviation === selectedTeam && d.season === selectedSeason);
 
-        console.log("Processed Team-Season Stats:", teamSeasonStats); // Debugging
-        return teamSeasonStats;
-    } catch (error) {
-        console.error("Error loading or processing data:", error);
-    }
-}
+    // Remove old charts
+    d3.select("#charts").selectAll("*").remove();
 
-function populateDropdowns(teamSeasonStats) {
-    try {
-        const seasons = Object.keys(teamSeasonStats);
-        const teams = [...new Set(Object.values(teamSeasonStats).flatMap(season => Object.keys(season)))];
-
-        console.log("Seasons:", seasons); // Debugging
-        console.log("Teams:", teams); // Debugging
-
-        // Populate season dropdown
-        const seasonDropdown = document.getElementById('seasonDropdown');
-        seasons.forEach(season => {
-            const option = document.createElement('option');
-            option.value = season;
-            option.textContent = season;
-            seasonDropdown.appendChild(option);
-        });
-
-        // Populate team dropdown
-        const teamDropdown = document.getElementById('teamDropdown');
-        teams.forEach(team => {
-            const option = document.createElement('option');
-            option.value = team;
-            option.textContent = team;
-            teamDropdown.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Error populating dropdowns:", error);
-    }
-}
-
-function renderChart(teamSeasonStats, selectedSeason, selectedTeam) {
-    if (!teamSeasonStats[selectedSeason] || !teamSeasonStats[selectedSeason][selectedTeam]) {
-        console.error("Invalid selection:", selectedSeason, selectedTeam);
-        return;
+    if (filteredData.length === 0) {
+      d3.select("#charts").append("p").text("No data available for the selected team and season.");
+      return;
     }
 
-    const ctx = document.getElementById('teamChart').getContext('2d');
+    attributes.forEach((attr, i) => {
+      const chartDiv = d3.select("#charts").append("div").attr("class", "chart");
 
-    // Extract data for the selected team and season
-    const teamStats = teamSeasonStats[selectedSeason][selectedTeam];
-    const data = {
-        labels: ['Points', 'Assists', 'Rebounds'],
-        datasets: [{
-            label: `${selectedTeam} (${selectedSeason})`,
-            data: [teamStats.points, teamStats.assists, teamStats.rebounds],
-            backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)'],
-            borderColor: ['rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'],
-            borderWidth: 1
-        }]
-    };
+      // Add chart title above the chart
+      chartDiv.append("h3")
+        .attr("class", "chart-title")
+        .style("text-align", "center")
+        .style("margin-bottom", "10px")
+        .style("font-size", "16px")
+        .text(titles[i]);
 
-    // Create or update the chart
-    if (window.teamChart) {
-        window.teamChart.data = data;
-        window.teamChart.update();
-    } else {
-        window.teamChart = new Chart(ctx, {
-            type: 'bar',
-            data: data,
-            options: {
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    }
-}
+      const svg = chartDiv.append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
-async function init() {
-    const teamSeasonStats = await fetchData();
-    if (!teamSeasonStats) return;
+      // Define scales
+      const x = d3.scaleBand()
+        .domain([selectedSeason])
+        .range([0, width])
+        .padding(0.5);
 
-    populateDropdowns(teamSeasonStats);
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(filteredData, d => d[attr])]).nice()
+        .range([height, 0]);
 
-    // Event listeners for dropdown changes
-    const seasonDropdown = document.getElementById('seasonDropdown');
-    const teamDropdown = document.getElementById('teamDropdown');
+      // Add x-axis
+      svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
+        .selectAll("text")
+        .style("font-size", "12px");
 
-    seasonDropdown.addEventListener('change', () => {
-        const selectedSeason = seasonDropdown.value;
-        const selectedTeam = teamDropdown.value;
-        renderChart(teamSeasonStats, selectedSeason, selectedTeam);
+      // Add y-axis
+      svg.append("g")
+        .call(d3.axisLeft(y).ticks(5).tickSize(-width))
+        .selectAll("line")
+        .style("stroke", "#e0e0e0");
+
+      // Add bars
+      svg.selectAll(".bar")
+        .data(filteredData)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.season))
+        .attr("y", d => y(d[attr]))
+        .attr("width", x.bandwidth())
+        .attr("height", d => height - y(d[attr]))
+        .attr("fill", "steelblue");
+
+      // Add y-axis label
+      svg.append("text")
+        .attr("class", "y-axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -margin.left + 15)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text(yLabels[i]);
     });
+  }
 
-    teamDropdown.addEventListener('change', () => {
-        const selectedSeason = seasonDropdown.value;
-        const selectedTeam = teamDropdown.value;
-        renderChart(teamSeasonStats, selectedSeason, selectedTeam);
-    });
+  // Initial load
+  const initialTeam = teams[0];
+  const initialSeason = seasons[0];
+  updateCharts(initialTeam, initialSeason);
 
-    // Initial render
-    const defaultSeason = seasonDropdown.value || Object.keys(teamSeasonStats)[0];
-    const defaultTeam = teamDropdown.value || Object.keys(teamSeasonStats[defaultSeason])[0];
-    renderChart(teamSeasonStats, defaultSeason, defaultTeam);
-}
+  teamSelect.on("change", function() {
+    updateCharts(this.value, seasonSelect.property("value"));
+  });
 
-init();
+  seasonSelect.on("change", function() {
+    updateCharts(teamSelect.property("value"), this.value);
+  });
+});
