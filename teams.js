@@ -25,12 +25,16 @@ d3.csv(csvFilePath).then(data => {
     }
   );
 
-  // Step 3: Generate the Vega-Lite spec
+  // Step 3: Generate the improved Vega-Lite spec
   const vegaLiteSpec = {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-    title: "Team Performance Metrics Across Seasons",
+    title: {
+      text: "Team Performance Metrics Across Seasons",
+      subtitle: "Comparing Points, Rebounds, and Assists for All Teams",
+      fontSize: 16
+    },
     width: 800,
-    height: 400,
+    height: 500,
     data: {
       values: aggregatedData
     },
@@ -39,22 +43,40 @@ d3.csv(csvFilePath).then(data => {
     ],
     mark: "line",
     encoding: {
-      x: { field: "season", type: "ordinal", title: "Season" },
-      y: { field: "value", type: "quantitative", title: "Average Metric Value" },
-      color: { field: "metric", type: "nominal", title: "Metric" },
+      x: {
+        field: "season",
+        type: "ordinal",
+        title: "Season",
+        sort: "ascending",
+        axis: { labelAngle: 0 }
+      },
+      y: {
+        field: "value",
+        type: "quantitative",
+        title: "Average Metric Value"
+      },
+      color: {
+        field: "metric",
+        type: "nominal",
+        title: "Metric",
+        scale: { scheme: "category10" }
+      },
+      strokeDash: {
+        field: "team_abbreviation",
+        type: "nominal",
+        legend: { title: "Team" }
+      },
       tooltip: [
         { field: "season", type: "ordinal", title: "Season" },
         { field: "team_abbreviation", type: "nominal", title: "Team" },
         { field: "metric", type: "nominal", title: "Metric" },
-        { field: "value", type: "quantitative", title: "Average" }
+        { field: "value", type: "quantitative", title: "Average Value" }
       ]
     },
-    selection: {
-      team: {
-        type: "single",
-        fields: ["team_abbreviation"],
-        bind: { input: "select", options: Array.from(new Set(aggregatedData.map(d => d.team_abbreviation))), name: "Select Team: " }
-      }
+    config: {
+      line: { point: true },
+      axis: { labelFontSize: 12, titleFontSize: 14 },
+      legend: { titleFontSize: 14, labelFontSize: 12 }
     }
   };
 
