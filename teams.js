@@ -5,6 +5,9 @@ const margin = { top: 40, right: 30, bottom: 60, left: 50 },
       height = 300 - margin.top - margin.bottom;
 
 d3.csv(csvFilePath).then(data => {
+  // Debug: Log raw data
+  console.log("Raw Data:", data);
+
   // Preprocess data
   data.forEach(d => {
     d.pts = +d.pts;
@@ -13,22 +16,34 @@ d3.csv(csvFilePath).then(data => {
     d.gp = +d.gp;
   });
 
-  // Get unique teams and seasons
+  // Extract unique teams and seasons
   const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).sort();
   const seasons = Array.from(new Set(data.map(d => d.season))).sort();
+
+  // Debug: Log teams and seasons
+  console.log("Teams:", teams);
+  console.log("Seasons:", seasons);
 
   const teamSelect = d3.select("#teamSelect");
   const seasonSelect = d3.select("#seasonSelect");
 
   // Populate the team dropdown
   teams.forEach(team => {
-    teamSelect.append("option").text(team).attr("value", team);
+    if (team) { // Ensure no empty team entries
+      teamSelect.append("option").text(team).attr("value", team);
+    }
   });
 
   // Populate the season dropdown
   seasons.forEach(season => {
-    seasonSelect.append("option").text(season).attr("value", season);
+    if (season) { // Ensure no empty season entries
+      seasonSelect.append("option").text(season).attr("value", season);
+    }
   });
+
+  // Debug: Check dropdown contents
+  console.log("Team Dropdown:", teamSelect.node());
+  console.log("Season Dropdown:", seasonSelect.node());
 
   // Update the charts when a team and season are selected
   function updateCharts(selectedTeam, selectedSeason) {
@@ -36,6 +51,7 @@ d3.csv(csvFilePath).then(data => {
 
     if (filteredData.length === 0) {
       console.warn("No data available for the selected team and season.");
+      d3.select("#charts").text("No data available.");
       return;
     }
 
@@ -85,22 +101,6 @@ d3.csv(csvFilePath).then(data => {
       .attr("width", x.bandwidth())
       .attr("height", d => height - y(d.pts))
       .attr("fill", "steelblue");
-
-    // Add labels
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", height + margin.bottom - 10)
-      .style("text-anchor", "middle")
-      .style("font-weight", "bold")
-      .text("Players");
-
-    svg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -height / 2)
-      .attr("y", -margin.left + 15)
-      .style("text-anchor", "middle")
-      .style("font-weight", "bold")
-      .text("Points");
   }
 
   // Handle dropdown change
@@ -126,4 +126,6 @@ d3.csv(csvFilePath).then(data => {
   teamSelect.property("value", initialTeam);
   seasonSelect.property("value", initialSeason);
   updateCharts(initialTeam, initialSeason);
+}).catch(error => {
+  console.error("Error loading CSV file:", error);
 });
