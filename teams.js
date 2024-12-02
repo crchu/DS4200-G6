@@ -15,7 +15,14 @@ function initializeComparisonCharts() {
 
       // Filter and process valid rows
       const processedData = parsedData
-        .filter((row) => row.team_abbreviation && row.season)
+        .filter((row) => {
+          const hasTeam = row.team_abbreviation && row.team_abbreviation.trim();
+          const hasSeason = row.season && row.season.trim();
+          if (!hasTeam || !hasSeason) {
+            console.warn("Invalid row found:", row);
+          }
+          return hasTeam && hasSeason;
+        })
         .map((row) => ({
           team_abbreviation: row.team_abbreviation.trim(),
           season: row.season.trim(),
@@ -31,8 +38,13 @@ function initializeComparisonCharts() {
       console.log("Processed Data:", processedData);
 
       // Extract unique teams and seasons
-      const teams = [...new Set(processedData.map((row) => row.team_abbreviation))].filter(Boolean).sort();
-      const seasons = [...new Set(processedData.map((row) => row.season))].filter(Boolean).sort();
+      const teams = [...new Set(processedData.map((row) => row.team_abbreviation))]
+        .filter(Boolean)
+        .sort();
+
+      const seasons = [...new Set(processedData.map((row) => row.season))]
+        .filter(Boolean)
+        .sort();
 
       console.log("Unique Teams:", teams);
       console.log("Unique Seasons:", seasons);
@@ -62,10 +74,12 @@ function populateDropdown(dropdownId, options) {
   dropdown.innerHTML = '<option value="">-- Select an Option --</option>'; // Clear and add default option
 
   options.forEach((optionValue) => {
-    const option = document.createElement("option");
-    option.value = optionValue;
-    option.textContent = optionValue;
-    dropdown.appendChild(option);
+    if (optionValue) { // Ensure valid options
+      const option = document.createElement("option");
+      option.value = optionValue;
+      option.textContent = optionValue;
+      dropdown.appendChild(option);
+    }
   });
 
   console.log(`Dropdown "${dropdownId}" populated with options:`, options);
