@@ -183,15 +183,17 @@
   <div id="scatterPlot"></div>
 
   <script>
-    const csvFilePath = "NBA_Players_2010.csv";
+    const csvFilePath = "NBA_Players_2010.csv"; 
 
     fetch(csvFilePath)
       .then(response => response.text())
       .then(csvData => {
         const parsedData = Papa.parse(csvData, { header: true }).data;
 
-        // the team dropdown
-        const teams = [...new Set(parsedData.map(row => row.team_abbreviation))].filter(Boolean);
+        // Filter valid rows
+        const validData = parsedData.filter(row => row.team_abbreviation && row.player_name);
+
+        const teams = [...new Set(validData.map(row => row.team_abbreviation))].sort();
         const teamSelect = document.getElementById("teamSelect");
         teams.forEach(team => {
           const option = document.createElement("option");
@@ -200,14 +202,13 @@
           teamSelect.appendChild(option);
         });
 
-        // the player dropdown based on selected team
         const playerSelect = document.getElementById("playerSelect");
         teamSelect.addEventListener("change", () => {
           const selectedTeam = teamSelect.value;
-          const players = parsedData
+          const players = validData
             .filter(row => row.team_abbreviation === selectedTeam)
             .map(row => row.player_name)
-            .filter(Boolean);
+            .sort();
 
           playerSelect.innerHTML = '<option value="">-- Select a Player --</option>';
           players.forEach(player => {
