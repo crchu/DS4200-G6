@@ -6,7 +6,7 @@ const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Total Points Scored", "Total Rebounds", "Total Assists", "Games Played"];
 const yLabels = ["Total Points", "Total Rebounds", "Total Assists", "Games Played"];
 
-d3.csv("all_seasons_9.csv").then(data => {
+d3.csv("NBA_Players_2010.csv").then(data => {
   // Preprocess the data
   data.forEach(d => {
     d.pts = +d.pts * d.gp; // Total points
