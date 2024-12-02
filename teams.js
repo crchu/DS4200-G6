@@ -1,17 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Team and Player Comparison</title>
-  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.1/papaparse.min.js"></script>
-</head>
-<body>
-
-  <h3>Average Metric Comparison for Selected Teams</h3>
+<h3>Average Metric Comparison for Selected Teams</h3>
 
   <div id="controls">
     <label for="compareSelect">Select a Team to Compare Against Celtics:</label>
