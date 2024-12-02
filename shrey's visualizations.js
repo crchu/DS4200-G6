@@ -30,3 +30,17 @@ Plotly.newPlot('heatmap', [{
     xaxis: { title: 'Metrics' },
     yaxis: { title: 'Metrics' }
 });
+
+Plotly.newPlot('shootingEfficiency', [{
+    x: [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4],
+    y: [0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.5, 0.55, 0.6, 0.4, 0.45, 0.5, 0.35, 0.4, 0.45],
+    type: 'box'
+}], {
+    title: 'Shooting Efficiency by Draft Round',
+    xaxis: {
+        title: 'Draft Round',
+        tickvals: [0, 1, 2, 3, 4],
+        ticktext: ['Undrafted', '1', '2', '3', '4']
+    },
+    yaxis: { title: 'Shooting Percentage' }
+});
