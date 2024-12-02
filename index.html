@@ -166,6 +166,17 @@
       
 <h3>Average Metric Comparison for Selected Teams</h3>
 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team and Player Comparison</title>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.1/papaparse.min.js"></script>
+</head>
+<body>
+
   <div id="controls">
     <label for="compareSelect">Select a Team to Compare Against Celtics:</label>
     <select id="compareSelect">
@@ -200,7 +211,7 @@
         const teams = [...new Set(validData.map(row => row.team_abbreviation))].sort();
         const compareSelect = document.getElementById("compareSelect");
         teams.forEach(team => {
-          if (team !== "BOS") { 
+          if (team !== "BOS") {
             const option = document.createElement("option");
             option.value = team;
             option.textContent = team;
@@ -208,8 +219,10 @@
           }
         });
 
+        // Metric dropdown
         const metricSelect = document.getElementById("metricSelect");
-          
+
+        // Listen for team or metric selection changes
         compareSelect.addEventListener("change", () => {
           const selectedTeam = compareSelect.value;
           const selectedMetric = metricSelect.value;
@@ -226,6 +239,7 @@
           }
         });
 
+        // Render the comparison chart
         function renderComparisonChart(selectedTeam, data, metric = "pts") {
           const barChartSpec = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -239,8 +253,8 @@
               {
                 "filter": {
                   "or": [
-                    { "field": "team_abbreviation", "equal": "BOS" }, // Celtics
-                    { "field": "team_abbreviation", "equal": selectedTeam } // Selected team
+                    { "field": "team_abbreviation", "equal": "BOS" }, 
+                    { "field": "team_abbreviation", "equal": selectedTeam } 
                   ]
                 }
               },
@@ -282,6 +296,3 @@
   </script>
 </body>
 </html>
-</body>
-</html>
-
