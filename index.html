@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NBA Player Stats Study</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
@@ -144,16 +145,26 @@
             </table>
         </div>
 
-
-        <h3>Metrics Across Seasons & Teams: Total points, rebounds, and assists</h3>
+        <h3>Metrics Across Seasons: Total points, rebounds, and assists</h3>
         <label for="teamSelect">Select Team:</label>
         <div id="dropdown"></div>
         <div id="chart"></div>
         <div id="tooltip" style="position: absolute; background: rgba(255, 255, 255, 0.9); border: 1px solid #ccc; padding: 10px; border-radius: 5px; visibility: hidden; pointer-events: none;"></div>
 
-    
+
+
         <h3>Correlation Heatmap</h3>
         <div id="heatmap" style="width: 100%; height: 500px;"></div>
+        <p>
+        The heatmap reveals significant relationships among key basketball metrics. 
+        High correlations, such as those between height and weight, and between offensive stats like points and usage percentage, 
+        show logical connections in player attributes and performance. Negative correlations, like the one between draft year and player
+         age, highlight older players being drafted earlier historically. 
+         Metrics like net rating exhibit weak correlations with most variables, reflecting its lack of usefulness. Red colors signify 
+         a strong positive positive correlation, whereas blue colors signify a weaker correlation between two variables(1 to -1 being 
+         positively strong and negatively strong relationnships, respectively)
+        </p>
+        <script src="heatmap.js"></script>
 
         <h3>Team Comparison Chart</h3>
         <p> In order to better evaluate the player stats, below are interactive charts that allow for user to select 
@@ -171,10 +182,34 @@
           <select id="playerSelect"></select>
         </div>
       
-        <script src="teams.js"></script>
+        <h3>Player Performance Charts</h3>
+        <div id="charts"></div>
+
+        <h3>Shooting Efficiency by Draft Round</h3>
+        <p>This chart shows the shooting efficiency of players categorized by draft rounds...</p>
+        <div id="shootingEfficiency" style="width: 100%; height: 500px;"></div>
+        <p>
+          Players drafted in earlier rounds (1-4) exhibit a gradual decrease in shooting efficiency, with round 4 
+          having the lowest performance. Surprisingly, later rounds (5-8) show a significant increase in efficiency, 
+          possibly reflecting a focus on specialized skills or higher motivation among players trying to prove their worth. 
+          These could also be drafs for veteran players worth significant value, Like James Harden for example. Undrafted players 
+          demonstrate consistent but moderate efficiency, showcasing a stable contribution despite not being selected in the drafts.
+          These players tend to be free agents, menaing that they are not contracted to play for a certain team, and can freely join
+          any teams.
+        </p>
+
+        <h3>Top 10 Players by Points, Assists, and Rebounds</h3>
+        <div id="topPlayersPoints" style="width: 100%; height: 500px;"></div>
+        <div id="topPlayersAssists" style="width: 100%; height: 500px;"></div>
+        <div id="topPlayersRebounds" style="width: 100%; height: 500px;"></div>
+
+  <script src="teams.js"></script>
+</body>
+</html>
         <script src="script.js"></script>
         <script src="shrey's visualizations.js"></script>
-        
+        <script src="teams.js"></script>
+        <script src="top-players-visualizations.js"></script>
 </body>
 </html>
 
