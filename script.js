@@ -32,6 +32,8 @@ d3.csv("NBA_Players_2010.csv").then(data => {
     });
     if (players.length > 0) {
       updateCharts(players[0]); 
+    } else {
+      d3.select("#charts").selectAll("*").remove(); // Clear charts if no players
     }
   }
 
@@ -43,7 +45,6 @@ d3.csv("NBA_Players_2010.csv").then(data => {
     attributes.forEach((attr, i) => {
       const chartDiv = d3.select("#charts").append("div").attr("class", "chart");
 
-      // Add chart title above the chart
       chartDiv.append("h3")
         .attr("class", "chart-title")
         .style("text-align", "center")
@@ -57,7 +58,6 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // Define scales
       const x = d3.scalePoint()
         .domain(playerData.map(d => d.season))
         .range([0, width])
@@ -67,7 +67,6 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .domain([0, d3.max(playerData, d => d[attr])]).nice()
         .range([height, 0]);
 
-      // Add x-axis
       svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
@@ -76,13 +75,11 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .attr("transform", "rotate(-30)")
         .style("font-size", "10px");
 
-      // Add y-axis
       svg.append("g")
         .call(d3.axisLeft(y).ticks(5).tickSize(-width))
         .selectAll("line")
         .style("stroke", "#e0e0e0");
 
-      // Add line chart
       const line = d3.line()
         .x(d => x(d.season))
         .y(d => y(d[attr]));
@@ -94,7 +91,6 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .attr("stroke-width", 1.5)
         .attr("d", line);
 
-      // Add data points
       svg.selectAll("circle")
         .data(playerData)
         .enter()
@@ -104,7 +100,6 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .attr("r", 4)
         .attr("fill", "steelblue");
 
-      // Add x-axis label
       svg.append("text")
         .attr("class", "x-axis-label")
         .attr("x", width / 2)
@@ -113,7 +108,6 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .style("font-weight", "bold")
         .text("Season");
 
-      // Add y-axis label
       svg.append("text")
         .attr("class", "y-axis-label")
         .attr("transform", "rotate(-90)")
@@ -125,7 +119,6 @@ d3.csv("NBA_Players_2010.csv").then(data => {
     });
   }
 
-  // Initial load
   updatePlayerDropdown(teams[0]); 
   teamSelection.on("change", function() {
     updatePlayerDropdown(this.value);
@@ -133,19 +126,4 @@ d3.csv("NBA_Players_2010.csv").then(data => {
   playerSelection.on("change", function() {
     updateCharts(this.value);
   });
-});
-
-
-const colors = ["steelblue", "darkorange", "forestgreen", "purple"];
-attributes.forEach((attr, i) => {
-  const line = d3.line()
-    .x(d => x(d.season))
-    .y(d => y(d[attr]));
-
-  svg.append("path")
-    .datum(playerData)
-    .attr("fill", "none")
-    .attr("stroke", colors[i])
-    .attr("stroke-width", 1.5)
-    .attr("d", line);
 });
