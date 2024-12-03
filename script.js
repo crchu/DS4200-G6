@@ -1,13 +1,12 @@
-const margin = { top: 40, right: 30, bottom: 60, left: 50 }, // Adjusted margins for better spacing
-      width = 300 - margin.left - margin.right,
-      height = 300 - margin.top - margin.bottom;
+const margin = { top: 40, right: 30, bottom: 60, left: 50 }; 
+const width = 300 - margin.left - margin.right;
+const height = 300 - margin.top - margin.bottom;
 
 const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 
 d3.csv("NBA_Players_2010.csv").then(data => {
-  // Preprocess the data
   data.forEach(d => {
     d.pts = +d.pts;
     d.reb = +d.reb;
@@ -16,30 +15,30 @@ d3.csv("NBA_Players_2010.csv").then(data => {
   });
 
   const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).sort();
-  const teamSelect = d3.select("#teamSelect");
-  const playerSelect = d3.select("#playerSelect");
+  const teamSelection = d3.select("#teamSelection"); 
+  const playerSelection = d3.select("#playerSelection"); 
 
   // Populate the team dropdown
   teams.forEach(team => {
-    teamSelect.append("option").text(team).attr("value", team);
+    teamSelection.append("option").text(team).attr("value", team);
   });
 
   // Update player dropdown when a team is selected
   function updatePlayerDropdown(selectedTeam) {
     const players = Array.from(new Set(data.filter(d => d.team_abbreviation === selectedTeam).map(d => d.player_name))).sort();
-    playerSelect.selectAll("option").remove();
+    playerSelection.selectAll("option").remove();
     players.forEach(player => {
-      playerSelect.append("option").text(player).attr("value", player);
+      playerSelection.append("option").text(player).attr("value", player);
     });
     if (players.length > 0) {
-      updateCharts(players[0]); // Load charts for the first player
+      updateCharts(players[0]); 
     }
   }
 
   // Update the charts when a player is selected
   function updateCharts(playerName) {
     const playerData = data.filter(d => d.player_name === playerName);
-    d3.select("#charts").selectAll("*").remove(); // Clear existing charts
+    d3.select("#charts").selectAll("*").remove(); 
 
     attributes.forEach((attr, i) => {
       const chartDiv = d3.select("#charts").append("div").attr("class", "chart");
@@ -48,7 +47,7 @@ d3.csv("NBA_Players_2010.csv").then(data => {
       chartDiv.append("h3")
         .attr("class", "chart-title")
         .style("text-align", "center")
-        .style("margin-bottom", "10px") // Adds spacing between title and chart
+        .style("margin-bottom", "10px")
         .style("font-size", "16px")
         .text(titles[i]);
 
@@ -73,8 +72,8 @@ d3.csv("NBA_Players_2010.csv").then(data => {
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
         .selectAll("text")
-        .style("text-anchor", "end") // Rotate labels
-        .attr("transform", "rotate(-30)") // Angle the labels
+        .style("text-anchor", "end")
+        .attr("transform", "rotate(-30)")
         .style("font-size", "10px");
 
       // Add y-axis
@@ -127,14 +126,15 @@ d3.csv("NBA_Players_2010.csv").then(data => {
   }
 
   // Initial load
-  updatePlayerDropdown(teams[0]); // Load players for the first team
-  teamSelect.on("change", function() {
+  updatePlayerDropdown(teams[0]); 
+  teamSelection.on("change", function() {
     updatePlayerDropdown(this.value);
   });
-  playerSelect.on("change", function() {
+  playerSelection.on("change", function() {
     updateCharts(this.value);
   });
 });
+
 
 const colors = ["steelblue", "darkorange", "forestgreen", "purple"];
 attributes.forEach((attr, i) => {
