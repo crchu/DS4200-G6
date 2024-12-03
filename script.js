@@ -135,3 +135,17 @@ d3.csv("NBA_Players_2010.csv").then(data => {
     updateCharts(this.value);
   });
 });
+
+const colors = ["steelblue", "darkorange", "forestgreen", "purple"];
+attributes.forEach((attr, i) => {
+  const line = d3.line()
+    .x(d => x(d.season))
+    .y(d => y(d[attr]));
+
+  svg.append("path")
+    .datum(playerData)
+    .attr("fill", "none")
+    .attr("stroke", colors[i])
+    .attr("stroke-width", 1.5)
+    .attr("d", line);
+});
