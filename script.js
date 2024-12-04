@@ -6,7 +6,7 @@ const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 
-d3.csv("NBA_Players_2010.csv").then(data => {
+d3.csv("NBA_Players.csv").then(data => {
   data.forEach(d => {
     d.pts = +d.pts;
     d.reb = +d.reb;
