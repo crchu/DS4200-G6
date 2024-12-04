@@ -42,11 +42,9 @@
 
     <h3>Introduction to the Data</h3>
           
-    <p> Our analysis makes use of a dataset from the NBA stats leaders, and it includes the 
-        top-performing players across various categories such as points per game, assists, 
-        rebounds, steals, and blocks starting from 2010 and after. This data contains 
-       roughly 450 records and includes around 22 key attributes. The attributes are listed 
-       in the following table:</p> 
+    <p> Our analysis analyzes a dataset from Kaggle, and it provides a comprehensive collection of NBA 
+        player data, spanning from 2005 and after. This data contains roughly 5000 rows and includes 
+        around 22 key attributes. The attributes are listed in the following table:</p> 
 
         <div class="center">
         <table class="tg">
@@ -192,11 +190,12 @@
     
         <h3>Team and Player Selection</h3>
         <p> Understanding NBA player performance is essential for evaluating individual contributions and their overall 
-            impact on the game. This analysis uses statistical data from the official NBA website's leaderboard to 
-            explore key performance metrics such as points, assists, and rebounds. These statistics serve as critical 
-            indicators of player efficiency, influencing decisions made by fans, analysts, and team managers alike. 
-            In order to better evaluate the player stats, below are interactive charts that allow for user to select 
-            which team and player stats they want to see.
+            impact on the game. The key metrics analyzed include points, rebounds, assists, and games played, displayed 
+            in individual line charts. Users can interact with dropdown menus to filter data by team and player, 
+            dynamically updating the charts. Each chart features a responsive x-axis that displays every other season 
+            for readability, and tooltips provide detailed stats when hovering over data points. This combines 
+            clear, customizable visualizations with user-friendly interactivity, offering an insightful and engaging 
+            way to explore NBA player performance trends.
         </p>
         <div id="controls">
             <label for="teamSelection">Select a Team:</label>
@@ -220,7 +219,15 @@
         <script src="top-players-visualizations.js"></script>
 
         <h3>Summary </h3>
-        
+        <p> In this visualization analysis, we examine NBA player performance metrics across multiple seasons from 2005-2022
+            to explore trends in scoring, rebounds, assists, and shooting efficiency. By incorporating interactive 
+            visualizations, we allow users to analyze player stats dynamically, filtered by team and individual 
+            players. This project also includes a correlation heatmap, offering insights into relationships between 
+            draft attributes and performance metrics.</p>
+
+        <p> However, this analysis is based on historical data and does not account for real-time changes or 
+            current-season updates. Future improvements could include providing player positioning to allow 
+            for deeper analysis of the player statistics.</p>
         
 </body>
 </html>
