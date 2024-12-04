@@ -104,7 +104,37 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("cy", d => y(d[attr]))
         .attr("r", 4)
         .attr("fill", "steelblue");
-
+      
+      svg.selectAll("circle")
+          .data(playerData)
+          .enter()
+          .append("circle")
+          .attr("cx", d => x(d.season))
+          .attr("cy", d => y(d[attr]))
+          .attr("r", 4)
+          .attr("fill", "steelblue")
+          .on("mouseover", function(event, d) {
+            tooltip
+              .style("visibility", "visible")
+              .html(`
+                <strong>Season:</strong> ${d.season}<br>
+                <strong>${titles[i]}:</strong> ${d[attr]}
+              `);
+            d3.select(this)
+              .attr("fill", "orange") // Highlight point
+              .attr("r", 6); // Enlarge point
+          })
+          .on("mousemove", function(event) {
+            tooltip
+              .style("top", `${event.pageY - 10}px`)
+              .style("left", `${event.pageX + 10}px`);
+          })
+          .on("mouseout", function() {
+            tooltip.style("visibility", "hidden");
+            d3.select(this)
+              .attr("fill", "steelblue") 
+              .attr("r", 4); 
+          });
       svg.append("text")
         .attr("class", "x-axis-label")
         .attr("x", width / 2)
