@@ -5,7 +5,7 @@ const height = 300 - margin.top - margin.bottom;
 const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
-const colors = ["steelblue", "orange", "green", "purple"]; 
+const colors = ["steelblue", "orange", "green", "purple"]; // Colors for charts
 
 d3.csv("NBA_Players.csv").then(data => {
   data.forEach(d => {
@@ -69,17 +69,17 @@ d3.csv("NBA_Players.csv").then(data => {
         .range([height, 0]);
 
       svg.append("g")
-          .attr("transform", `translate(0,${height})`)
-          .call(
-            d3.axisBottom(x)
-              .tickValues(x.domain().filter((_, i) => i % 2 === 0)) 
-              .tickSize(0)
-              .tickPadding(10)
-          )
-          .selectAll("text")
-          .style("text-anchor", "end")
-          .attr("transform", "rotate(-45)")
-          .style("font-size", "10px");
+        .attr("transform", `translate(0,${height})`)
+        .call(
+          d3.axisBottom(x)
+            .tickValues(x.domain().filter((d, i) => i % 2 === 0)) // Show every other tick
+            .tickSize(0) // Remove tick lines if not needed
+            .tickPadding(10) // Add spacing between the tick line and text
+        )
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("transform", "rotate(-45)") // Rotate the labels for better spacing
+        .style("font-size", "10px");
 
       svg.append("g")
         .call(d3.axisLeft(y).ticks(5).tickSize(-width))
@@ -93,22 +93,23 @@ d3.csv("NBA_Players.csv").then(data => {
       svg.append("path")
         .datum(playerData)
         .attr("fill", "none")
-        .attr("stroke", colors[i % colors.length])
+        .attr("stroke", colors[i % colors.length]) // Use a different color for each chart
         .attr("stroke-width", 1.5)
         .attr("d", line);
-
-      // Tooltip setup
+      
       const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("position", "absolute")
         .style("background", "#fff")
         .style("border", "1px solid #ccc")
-        .style("padding", "8px")
+        .style("padding", "5px")
         .style("border-radius", "4px")
-        .style("box-shadow", "0px 0px 10px rgba(0,0,0,0.1)")
-        .style("visibility", "hidden")
-        .style("font-size", "12px");
-
+        .style("box-shadow", "0px 0px 5px rgba(0,0,0,0.3)")
+        .style("font-size", "12px")
+        .style("pointer-events", "none")
+        .style("visibility", "hidden");
+      
+      // Add points with hover functionality
       svg.selectAll("circle")
         .data(playerData)
         .enter()
@@ -116,21 +117,24 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("cx", d => x(d.season))
         .attr("cy", d => y(d[attr]))
         .attr("r", 4)
-        .attr("fill", colors[i % colors.length])
-        .on("mouseover", (event, d) => {
-          tooltip.style("visibility", "visible")
+        .attr("fill", "steelblue")
+        .on("mouseover", function(event, d) {
+          // Show the tooltip with stats
+          tooltip
+            .style("visibility", "visible")
             .html(`
               <strong>Season:</strong> ${d.season}<br>
               <strong>${titles[i]}:</strong> ${d[attr]}
-            `)
+            `);
+        })
+        .on("mousemove", function(event) {
+          // Position the tooltip near the cursor
+          tooltip
             .style("top", `${event.pageY - 10}px`)
             .style("left", `${event.pageX + 10}px`);
         })
-        .on("mousemove", (event) => {
-          tooltip.style("top", `${event.pageY - 10}px`)
-            .style("left", `${event.pageX + 10}px`);
-        })
-        .on("mouseout", () => {
+        .on("mouseout", function() {
+          // Hide the tooltip when not hovering
           tooltip.style("visibility", "hidden");
         });
 
