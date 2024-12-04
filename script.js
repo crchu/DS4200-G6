@@ -7,6 +7,18 @@ const titles = ["Average Points per Game", "Average Rebounds per Game", "Average
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const colors = ["steelblue", "orange", "green", "purple"]; 
 
+const tooltip2 = d3.select("body").append("div")
+        .attr("class", "tooltip2")
+        .style("position", "absolute")
+        .style("background", "#fff")
+        .style("border", "1px solid #ccc")
+        .style("padding", "5px")
+        .style("border-radius", "4px")
+        .style("box-shadow", "0px 0px 5px rgba(0,0,0,0.3)")
+        .style("font-size", "12px")
+        .style("pointer-events", "none")
+        .style("visibility", "hidden");
+
 d3.csv("NBA_Players.csv").then(data => {
   data.forEach(d => {
     d.pts = +d.pts;
@@ -96,18 +108,6 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("stroke", colors[i % colors.length]) 
         .attr("stroke-width", 1.5)
         .attr("d", line);
-      
-      const tooltip2 = d3.select("body").append("div")
-        .attr("class", "tooltip2")
-        .style("position", "absolute")
-        .style("background", "#fff")
-        .style("border", "1px solid #ccc")
-        .style("padding", "5px")
-        .style("border-radius", "4px")
-        .style("box-shadow", "0px 0px 5px rgba(0,0,0,0.3)")
-        .style("font-size", "12px")
-        .style("pointer-events", "none")
-        .style("visibility", "hidden");
       
       // Add points with hover functionality
       svg.selectAll("circle")
