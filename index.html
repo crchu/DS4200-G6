@@ -34,7 +34,7 @@
 
     <p> To learn more about NBA player statistics and performance analytics,
       visit the <a href="https://www.nba.com/stats">NBA's official website</a> or explore 
-      studies like Skinner and Guy's <a href="https://doi.org/10.1371/journal.pone.0136393"
+      studis like Skinner and Guy's <a href="https://doi.org/10.1371/journal.pone.0136393"
       >A Method for Using Player Tracking Data in Basketball to Learn Player Skills and 
       Predict Team Performance</a> and Nguyen et al.'s <a href="https://doi.org/10.1080/24751839.2021.1977066"
       >The Application of Machine Learning and Deep Learning in Sport: Predicting NBA Players 
@@ -146,39 +146,42 @@
         </div>
     
         <h3>Correlation Heatmap</h3>
-        <div id="heatmap" style="width: 100%; height: 500px;"></div>
+        <div id="heatmap" style="width: 100%; height: 50px;"></div>
+        <img src="correlation_heatmap.png" alt="Correlation Heatmap">
         <p>
-        The heatmap reveals significant relationships among key basketball metrics. 
-        High correlations, such as those between height and weight, and between offensive stats like points and usage percentage, 
-        show logical connections in player attributes and performance. Negative correlations, like the one between draft year and player
-         age, highlight older players being drafted earlier historically. 
-         Metrics like net rating exhibit weak correlations with most variables, reflecting its lack of usefulness. Red colors signify 
-         a strong positive positive correlation, whereas blue colors signify a weaker correlation between two variables(1 to -1 being 
-         positively strong and negatively strong relationnships, respectively)
+          The heatmap reveals significant relationships among key basketball metrics and draft-related attributes. 
+          Positive correlations, such as those between height and weight, and between offensive statistics like points per game, 
+          usage percentage, and true shooting percentage, show logical connections between a player’s physical attributes and their 
+          scoring contributions. Rebounding also correlates positively with height and weight, reflecting the advantage of size in 
+          rebounding effectiveness. Negative correlations, like the one between draft year and age, highlight the trend of younger
+           players being drafted earlier. Metrics such as net rating exhibit weak correlations with most variables, indicating that 
+           individual player performance does not always align strongly with team success. Red colors signify strong positive 
+           relationships, while blue colors indicate negative correlations, ranging from 1 to -1 in strength.
         </p>
-        <script src="heatmap.js"></script>
+        
     
-        <h3>Metrics Across Seasons and Teams: Total Points, Rebounds, and Assists</h3>
+        <h3>Metrics Across Seasons: Total points, rebounds, and assists</h3>
         <label for="teamSelect">Select Team:</label>
         <div id="dropdown"></div>
         <div id="chart"></div>
         <div id="tooltip" style="position: absolute; background: rgba(255, 255, 255, 0.9); border: 1px solid #ccc; padding: 10px; border-radius: 5px; visibility: hidden; pointer-events: none;"></div>
-        <p>This interactive chart allows users to select an NBA team from a dropdown menu to view its total points (Pts), rebounds (Reb), and assists (Ast) for a given season. 
-            By dynamically updating based on the selected team, the chart provides a clear breakdown of performance across these key metrics. It offers valuable insights into a team’s strengths, such as whether they excel in scoring, rebounding, or facilitating play.
-            Additionally, the chart can be used to compare teams, highlighting differences in play style and performance. For example, it may reveal if a team focuses more on offense (points), dominates defensively (rebounds), or emphasizes ball movement and teamwork (assists). 
-            This tool is useful for fans, analysts, and coaches to understand team dynamics, identify patterns, and evaluate performance trends over multiple seasons.</p>
 
         <h3>Shooting Efficiency by Draft Round</h3>
-        <div id="shootingEfficiency" style="width: 100%; height: 500px;"></div>
+        <p>This chart shows the shooting efficiency of players categorized by draft rounds...</p>
+        <img src="shooting_efficiency.png" alt="Shooting Efficiency by Draft Round">
+        <div id="shootingEfficiency" style="width: 100%; height: 50px;"></div>
         <p>
-          Players drafted in earlier rounds (1-4) exhibit a gradual decrease in shooting efficiency, with round 4 
-          having the lowest performance. Surprisingly, later rounds (5-8) show a significant increase in efficiency, 
-          possibly reflecting a focus on specialized skills or higher motivation among players trying to prove their worth. 
-          These could also be drafs for veteran players worth significant value, Like James Harden for example. Undrafted players 
-          demonstrate consistent but moderate efficiency, showcasing a stable contribution despite not being selected in the drafts.
-          These players tend to be free agents, menaing that they are not contracted to play for a certain team, and can freely join
-          any teams.
+          The box plot highlights shooting efficiency (true shooting percentage) categorized by draft round, revealing trends 
+          in player performance based on draft position. Players selected in the first round display consistent shooting efficiency, 
+          with a narrow range and fewer outliers, indicating their reliability as scorers. Second-round picks, on the other hand, 
+          show greater variability, with some high-performing outliers suggesting potential undervaluation during the draft process. 
+          Undrafted players exhibit steady but slightly lower efficiency compared to first-round picks, showcasing their ability to 
+          contribute consistently despite not being selected. This chart illustrates the relationship between draft round and scoring 
+          efficiency, emphasizing how earlier draft picks tend to perform more reliably, while later picks and undrafted players 
+          demonstrate greater performance variability.
         </p>
+        
+
     
         <h3>Team and Player Selection</h3>
         <p> Understanding NBA player performance is essential for evaluating individual contributions and their overall 
@@ -198,7 +201,7 @@
 
         <h3>Player Performance Charts</h3>
         <div id="charts"></div>
-        <script src="script.js"></script>
+
 
         <h3>Top 10 Players by Points, Assists, and Rebounds</h3>
         <div id="topPlayersPoints" style="width: 100%; height: 500px;"></div>
@@ -206,6 +209,7 @@
         <div id="topPlayersRebounds" style="width: 100%; height: 500px;"></div>
 
         <script src="teams.js"></script>
+        <script src="script.js"></script>
         <script src="shrey's visualizations.js"></script>
         <script src="top-players-visualizations.js"></script>
 </body>
