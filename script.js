@@ -97,8 +97,8 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("stroke-width", 1.5)
         .attr("d", line);
       
-      const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
+      const tooltip2 = d3.select("body").append("div")
+        .attr("class", "tooltip2")
         .style("position", "absolute")
         .style("background", "#fff")
         .style("border", "1px solid #ccc")
@@ -119,7 +119,7 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("r", 4)
         .attr("fill", "steelblue")
         .on("mouseover", function(event, d) {
-          tooltip
+          tooltip2
             .style("visibility", "visible")
             .html(`
               <strong>Season:</strong> ${d.season}<br>
@@ -127,12 +127,12 @@ d3.csv("NBA_Players.csv").then(data => {
             `);
         })
         .on("mousemove", function(event) {
-          tooltip
+          tooltip2
             .style("top", `${event.pageY - 10}px`)
             .style("left", `${event.pageX + 10}px`);
         })
         .on("mouseout", function() {
-          tooltip.style("visibility", "hidden");
+          tooltip2.style("visibility", "hidden");
         });
 
       svg.append("text")
