@@ -1,5 +1,5 @@
 // Load and process the CSV file
-d3.csv("NBA_Players.csv").then(data => {
+d3.csv("NBA_Players_2010.csv").then(data => {
   // Convert numeric fields
   data.forEach(d => {
     d.pts = +d.pts;
