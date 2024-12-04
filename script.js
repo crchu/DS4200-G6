@@ -61,7 +61,7 @@ d3.csv("NBA_Players.csv").then(data => {
       const x = d3.scalePoint()
         .domain(playerData.map(d => d.season))
         .range([0, width])
-        .padding(0.5);
+        .padding(1);
 
       const y = d3.scaleLinear()
         .domain([0, d3.max(playerData, d => d[attr])]).nice()
@@ -72,7 +72,7 @@ d3.csv("NBA_Players.csv").then(data => {
         .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
         .selectAll("text")
         .style("text-anchor", "end")
-        .attr("transform", "rotate(-30)")
+        .attr("transform", "rotate(-45)") 
         .style("font-size", "10px");
 
       svg.append("g")
