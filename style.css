@@ -59,6 +59,15 @@ table.tg td {
 }
 
 
+#dropdown select {
+  padding: 5px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f7f7f7;
+  margin-bottom: 20px;
+}
+
 #charts {
   display: grid; 
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
