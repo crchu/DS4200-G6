@@ -101,7 +101,7 @@ d3.csv("NBA_Players.csv").then(data => {
             .attr("height", d => height - yScale(d.value))
             .attr("fill", d => colorScale(d.key))
             .on("mouseover", function (event, d) {
-                d3.select("#tooltip")
+                d3.select("#tooltip1")
                     .style("visibility", "visible")
                     .html(`${d.key.toUpperCase()}: ${d.value}`)
                     .style("top", `${event.pageY - 50}px`)
