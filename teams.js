@@ -21,6 +21,20 @@ const dropdown = d3.select("#dropdown")
     .append("select")
     .attr("id", "teamSelect");
 
+const tooltip1 = d3.select("body")
+  .append("div")
+  .attr("id", "tooltip1")
+  .attr("class", "tooltip")
+  .style("position", "absolute")
+  .style("visibility", "hidden")
+  .style("background-color", "#fff")
+  .style("border", "1px solid #ccc")
+  .style("padding", "5px")
+  .style("border-radius", "4px")
+  .style("box-shadow", "0px 0px 5px rgba(0,0,0,0.3)")
+  .style("font-size", "12px")
+  .style("pointer-events", "none");
+
 // Load and process data
 d3.csv("NBA_Players.csv").then(data => {
     data.forEach(d => {
@@ -101,20 +115,20 @@ d3.csv("NBA_Players.csv").then(data => {
             .attr("height", d => height - yScale(d.value))
             .attr("fill", d => colorScale(d.key))
             .on("mouseover", function (event, d) {
-                d3.select("#tooltip1")
-                    .style("visibility", "visible")
-                    .html(`${d.key.toUpperCase()}: ${d.value}`)
-                    .style("top", `${event.pageY - 50}px`)
-                    .style("left", `${event.pageX + 10}px`);
-            })
-            .on("mousemove", event => {
-                d3.select("#tooltip1")
-                    .style("top", `${event.pageY - 50}px`)
-                    .style("left", `${event.pageX + 10}px`);
-            })
-            .on("mouseout", () => {
-                d3.select("#tooltip1").style("visibility", "hidden");
-            });
+                    tooltip1
+                      .style("visibility", "visible")
+                      .html(`${d.key.toUpperCase()}: ${d.value}`)
+                      .style("top", `${event.pageY - 50}px`)
+                      .style("left", `${event.pageX + 10}px`);
+                  })
+                  .on("mousemove", function (event) {
+                    tooltip1
+                      .style("top", `${event.pageY - 50}px`)
+                      .style("left", `${event.pageX + 10}px`);
+                  })
+                  .on("mouseout", function () {
+                    tooltip1.style("visibility", "hidden");
+                  });
 
         // Add legend
         const legend = svg.append("g")
