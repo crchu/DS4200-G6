@@ -22,7 +22,7 @@ const dropdown = d3.select("#dropdown")
     .attr("id", "teamSelect");
 
 // Load and process data
-d3.csv("NBA_Players.csv").then(data => {
+d3.csv("NBA_Players_2010.csv").then(data => {
     data.forEach(d => {
         d.pts = +d.pts * +d.gp; // Total points
         d.reb = +d.reb * +d.gp; // Total rebounds
