@@ -69,12 +69,17 @@ d3.csv("NBA_Players.csv").then(data => {
         .range([height, 0]);
 
       svg.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
-        .selectAll("text")
-        .style("text-anchor", "end")
-        .attr("transform", "rotate(-30)")
-        .style("font-size", "10px");
+          .attr("transform", `translate(0,${height})`)
+          .call(
+            d3.axisBottom(x)
+              .tickValues(x.domain().filter((_, i) => i % 2 === 0)) // Show every other label
+              .tickSize(0)
+              .tickPadding(10)
+          )
+          .selectAll("text")
+          .style("text-anchor", "end")
+          .attr("transform", "rotate(-45)")
+          .style("font-size", "10px");
 
       svg.append("g")
         .call(d3.axisLeft(y).ticks(5).tickSize(-width))
