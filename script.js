@@ -1,5 +1,5 @@
 const margin = { top: 40, right: 30, bottom: 60, left: 50 }; 
-const width = 300 - margin.left - margin.right;
+const width = 400 - margin.left - margin.right;
 const height = 300 - margin.top - margin.bottom;
 
 const attributes = ['pts', 'reb', 'ast', 'gp'];
