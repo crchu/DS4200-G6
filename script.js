@@ -5,6 +5,7 @@ const height = 300 - margin.top - margin.bottom;
 const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
+const colors = ["steelblue", "orange", "green", "purple"]; // Colors for charts
 
 d3.csv("NBA_Players.csv").then(data => {
   data.forEach(d => {
@@ -56,7 +57,7 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
-        .attr("transform", translate(${margin.left},${margin.top}));
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
       const x = d3.scalePoint()
         .domain(playerData.map(d => d.season))
@@ -68,7 +69,7 @@ d3.csv("NBA_Players.csv").then(data => {
         .range([height, 0]);
 
       svg.append("g")
-        .attr("transform", translate(0,${height}))
+        .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
         .selectAll("text")
         .style("text-anchor", "end")
@@ -87,7 +88,7 @@ d3.csv("NBA_Players.csv").then(data => {
       svg.append("path")
         .datum(playerData)
         .attr("fill", "none")
-        .attr("stroke", "steelblue")
+        .attr("stroke", colors[i % colors.length]) // Use a different color for each chart
         .attr("stroke-width", 1.5)
         .attr("d", line);
 
@@ -98,7 +99,7 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("cx", d => x(d.season))
         .attr("cy", d => y(d[attr]))
         .attr("r", 4)
-        .attr("fill", "steelblue");
+        .attr("fill", colors[i % colors.length]); // Use the same color for circles as the line
 
       svg.append("text")
         .attr("class", "x-axis-label")
