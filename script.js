@@ -5,7 +5,7 @@ const height = 300 - margin.top - margin.bottom;
 const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
-const colors = ["steelblue", "orange", "green", "purple"]; // Colors for charts
+const colors = ["steelblue", "orange", "green", "purple"]; 
 
 d3.csv("NBA_Players.csv").then(data => {
   data.forEach(d => {
@@ -72,7 +72,7 @@ d3.csv("NBA_Players.csv").then(data => {
           .attr("transform", `translate(0,${height})`)
           .call(
             d3.axisBottom(x)
-              .tickValues(x.domain().filter((_, i) => i % 2 === 0)) // Show every other label
+              .tickValues(x.domain().filter((_, i) => i % 2 === 0)) 
               .tickSize(0)
               .tickPadding(10)
           )
@@ -93,7 +93,7 @@ d3.csv("NBA_Players.csv").then(data => {
       svg.append("path")
         .datum(playerData)
         .attr("fill", "none")
-        .attr("stroke", colors[i % colors.length]) // Use a different color for each chart
+        .attr("stroke", colors[i % colors.length])
         .attr("stroke-width", 1.5)
         .attr("d", line);
 
