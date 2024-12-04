@@ -92,6 +92,18 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("stroke-width", 1.5)
         .attr("d", line);
 
+      // Tooltip setup
+      const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("background", "#fff")
+        .style("border", "1px solid #ccc")
+        .style("padding", "8px")
+        .style("border-radius", "4px")
+        .style("box-shadow", "0px 0px 10px rgba(0,0,0,0.1)")
+        .style("visibility", "hidden")
+        .style("font-size", "12px");
+
       svg.selectAll("circle")
         .data(playerData)
         .enter()
@@ -99,7 +111,23 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("cx", d => x(d.season))
         .attr("cy", d => y(d[attr]))
         .attr("r", 4)
-        .attr("fill", colors[i % colors.length]); // Use the same color for circles as the line
+        .attr("fill", colors[i % colors.length])
+        .on("mouseover", (event, d) => {
+          tooltip.style("visibility", "visible")
+            .html(`
+              <strong>Season:</strong> ${d.season}<br>
+              <strong>${titles[i]}:</strong> ${d[attr]}
+            `)
+            .style("top", `${event.pageY - 10}px`)
+            .style("left", `${event.pageX + 10}px`);
+        })
+        .on("mousemove", (event) => {
+          tooltip.style("top", `${event.pageY - 10}px`)
+            .style("left", `${event.pageX + 10}px`);
+        })
+        .on("mouseout", () => {
+          tooltip.style("visibility", "hidden");
+        });
 
       svg.append("text")
         .attr("class", "x-axis-label")
