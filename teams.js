@@ -108,12 +108,12 @@ d3.csv("NBA_Players.csv").then(data => {
                     .style("left", `${event.pageX + 10}px`);
             })
             .on("mousemove", event => {
-                d3.select("#tooltip")
+                d3.select("#tooltip1")
                     .style("top", `${event.pageY - 50}px`)
                     .style("left", `${event.pageX + 10}px`);
             })
             .on("mouseout", () => {
-                d3.select("#tooltip").style("visibility", "hidden");
+                d3.select("#tooltip1").style("visibility", "hidden");
             });
 
         // Add legend
