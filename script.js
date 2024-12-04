@@ -69,11 +69,11 @@ d3.csv("NBA_Players.csv").then(data => {
 
       svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickSize(0).tickPadding(10))
-        .selectAll("text")
-        .style("text-anchor", "end")
-        .attr("transform", "rotate(-45)") 
-        .style("font-size", "10px");
+        .call(
+          d3.axisBottom(x)
+            .tickValues(x.domain().filter((d, i) => i % 2 === 0)) // Show every other tick
+            .tickSize(0)
+            .tickPadding(10)
 
       svg.append("g")
         .call(d3.axisLeft(y).ticks(5).tickSize(-width))
