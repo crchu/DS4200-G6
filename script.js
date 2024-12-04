@@ -1,11 +1,27 @@
-const margin = { top: 40, right: 30, bottom: 60, left: 50 }; 
+// Set up chart dimensions and margins
+const margin = { top: 40, right: 30, bottom: 60, left: 50 };
 const width = 400 - margin.left - margin.right;
 const height = 300 - margin.top - margin.bottom;
 
+// Attributes and labels
 const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 
+// Tooltip setup
+const tooltip = d3.select("body").append("div")
+  .attr("class", "tooltip")
+  .style("position", "absolute")
+  .style("background", "#fff")
+  .style("border", "1px solid #ccc")
+  .style("padding", "5px")
+  .style("border-radius", "4px")
+  .style("box-shadow", "0px 0px 5px rgba(0,0,0,0.3)")
+  .style("font-size", "12px")
+  .style("pointer-events", "none")
+  .style("visibility", "hidden");
+
+// Load data and process
 d3.csv("NBA_Players.csv").then(data => {
   data.forEach(d => {
     d.pts = +d.pts;
@@ -15,15 +31,15 @@ d3.csv("NBA_Players.csv").then(data => {
   });
 
   const teams = Array.from(new Set(data.map(d => d.team_abbreviation))).sort();
-  const teamSelection = d3.select("#teamSelection"); 
-  const playerSelection = d3.select("#playerSelection"); 
+  const teamSelection = d3.select("#teamSelection");
+  const playerSelection = d3.select("#playerSelection");
 
-  // Populate the team dropdown
+  // Populate team dropdown
   teams.forEach(team => {
     teamSelection.append("option").text(team).attr("value", team);
   });
 
-  // Update player dropdown when a team is selected
+  // Function to update player dropdown
   function updatePlayerDropdown(selectedTeam) {
     const players = Array.from(new Set(data.filter(d => d.team_abbreviation === selectedTeam).map(d => d.player_name))).sort();
     playerSelection.selectAll("option").remove();
@@ -31,20 +47,21 @@ d3.csv("NBA_Players.csv").then(data => {
       playerSelection.append("option").text(player).attr("value", player);
     });
     if (players.length > 0) {
-      updateCharts(players[0]); 
+      updateCharts(players[0]);
     } else {
-      d3.select("#charts").selectAll("*").remove(); // Clear charts if no players
+      d3.select("#charts").selectAll("*").remove();
     }
   }
 
-  // Update the charts when a player is selected
+  // Function to update charts
   function updateCharts(playerName) {
     const playerData = data.filter(d => d.player_name === playerName);
-    d3.select("#charts").selectAll("*").remove(); 
+    d3.select("#charts").selectAll("*").remove();
 
     attributes.forEach((attr, i) => {
       const chartDiv = d3.select("#charts").append("div").attr("class", "chart");
 
+      // Chart title
       chartDiv.append("h3")
         .attr("class", "chart-title")
         .style("text-align", "center")
@@ -52,12 +69,14 @@ d3.csv("NBA_Players.csv").then(data => {
         .style("font-size", "16px")
         .text(titles[i]);
 
+      // Create SVG
       const svg = chartDiv.append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+      // Define scales
       const x = d3.scalePoint()
         .domain(playerData.map(d => d.season))
         .range([0, width])
@@ -67,24 +86,24 @@ d3.csv("NBA_Players.csv").then(data => {
         .domain([0, d3.max(playerData, d => d[attr])]).nice()
         .range([height, 0]);
 
+      // Add axes
       svg.append("g")
-          .attr("transform", `translate(0,${height})`)
-          .call(
-            d3.axisBottom(x)
-              .tickValues(x.domain().filter((d, i) => i % 2 === 0)) // Show every other tick
-              .tickSize(0)
-              .tickPadding(10)
-          )
-          .selectAll("text")
-          .style("text-anchor", "end")
-          .attr("transform", "rotate(-45)") // Rotate for better spacing
-          .style("font-size", "10px");
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x)
+          .tickValues(x.domain().filter((d, i) => i % 2 === 0))
+          .tickSize(0)
+          .tickPadding(10))
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("transform", "rotate(-45)")
+        .style("font-size", "10px");
 
       svg.append("g")
         .call(d3.axisLeft(y).ticks(5).tickSize(-width))
         .selectAll("line")
         .style("stroke", "#e0e0e0");
 
+      // Add line
       const line = d3.line()
         .x(d => x(d.season))
         .y(d => y(d[attr]));
@@ -96,6 +115,7 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("stroke-width", 1.5)
         .attr("d", line);
 
+      // Add points with tooltip
       svg.selectAll("circle")
         .data(playerData)
         .enter()
@@ -103,51 +123,31 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("cx", d => x(d.season))
         .attr("cy", d => y(d[attr]))
         .attr("r", 4)
-        .attr("fill", "steelblue");
-      
-      svg.selectAll("circle")
-          .data(playerData)
-          .enter()
-          .append("circle")
-          .attr("cx", d => x(d.season))
-          .attr("cy", d => y(d[attr]))
-          .attr("r", 4)
-          .attr("fill", "steelblue")
-          .on("mouseover", function(event, d) {
-            tooltip
-              .style("visibility", "visible")
-              .html(`
-                <strong>Season:</strong> ${d.season}<br>
-                <strong>${titles[i]}:</strong> ${d[attr]}
-              `);
-            d3.select(this)
-              .attr("fill", "orange") // Highlight point
-              .attr("r", 6); // Enlarge point
-          })
-          .on("mousemove", function(event) {
-            tooltip
-              .style("top", `${event.pageY - 10}px`)
-              .style("left", `${event.pageX + 10}px`);
-          })
-          .on("mouseout", function() {
-            tooltip.style("visibility", "hidden");
-            d3.select(this)
-              .attr("fill", "steelblue") 
-              .attr("r", 4); 
-          });
+        .attr("fill", "steelblue")
+        .on("mouseover", function(event, d) {
+          tooltip
+            .style("visibility", "visible")
+            .html(`
+              <strong>Season:</strong> ${d.season}<br>
+              <strong>${titles[i]}:</strong> ${d[attr]}
+            `);
+          d3.select(this)
+            .attr("fill", "orange")
+            .attr("r", 6);
+        })
+        .on("mousemove", function(event) {
+          tooltip
+            .style("top", `${event.pageY - 10}px`)
+            .style("left", `${event.pageX + 10}px`);
+        })
+        .on("mouseout", function() {
+          tooltip.style("visibility", "hidden");
+          d3.select(this)
+            .attr("fill", "steelblue")
+            .attr("r", 4);
+        });
 
-      const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("position", "absolute")
-        .style("background", "#fff")
-        .style("border", "1px solid #ccc")
-        .style("padding", "5px")
-        .style("border-radius", "4px")
-        .style("box-shadow", "0px 0px 5px rgba(0,0,0,0.3)")
-        .style("font-size", "12px")
-        .style("pointer-events", "none")
-        .style("visibility", "hidden");
-      
+      // Axis labels
       svg.append("text")
         .attr("class", "x-axis-label")
         .attr("x", width / 2)
@@ -167,7 +167,10 @@ d3.csv("NBA_Players.csv").then(data => {
     });
   }
 
-  updatePlayerDropdown(teams[0]); 
+  // Initialize with the first team
+  updatePlayerDropdown(teams[0]);
+
+  // Event listeners for dropdowns
   teamSelection.on("change", function() {
     updatePlayerDropdown(this.value);
   });
