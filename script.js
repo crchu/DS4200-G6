@@ -5,7 +5,7 @@ const height = 300 - margin.top - margin.bottom;
 const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
-const colors = ["steelblue", "orange", "green", "purple"]; // Colors for charts
+const colors = ["steelblue", "orange", "green", "purple"]; 
 
 d3.csv("NBA_Players.csv").then(data => {
   data.forEach(d => {
@@ -34,7 +34,7 @@ d3.csv("NBA_Players.csv").then(data => {
     if (players.length > 0) {
       updateCharts(players[0]); 
     } else {
-      d3.select("#charts").selectAll("*").remove(); // Clear charts if no players
+      d3.select("#charts").selectAll("*").remove(); 
     }
   }
 
@@ -72,13 +72,13 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("transform", `translate(0,${height})`)
         .call(
           d3.axisBottom(x)
-            .tickValues(x.domain().filter((d, i) => i % 2 === 0)) // Show every other tick
-            .tickSize(0) // Remove tick lines if not needed
-            .tickPadding(10) // Add spacing between the tick line and text
+            .tickValues(x.domain().filter((d, i) => i % 2 === 0)) 
+            .tickSize(0.5) 
+            .tickPadding(10) 
         )
         .selectAll("text")
         .style("text-anchor", "end")
-        .attr("transform", "rotate(-45)") // Rotate the labels for better spacing
+        .attr("transform", "rotate(-45)") 
         .style("font-size", "10px");
 
       svg.append("g")
@@ -93,7 +93,7 @@ d3.csv("NBA_Players.csv").then(data => {
       svg.append("path")
         .datum(playerData)
         .attr("fill", "none")
-        .attr("stroke", colors[i % colors.length]) // Use a different color for each chart
+        .attr("stroke", colors[i % colors.length]) 
         .attr("stroke-width", 1.5)
         .attr("d", line);
       
@@ -119,7 +119,6 @@ d3.csv("NBA_Players.csv").then(data => {
         .attr("r", 4)
         .attr("fill", "steelblue")
         .on("mouseover", function(event, d) {
-          // Show the tooltip with stats
           tooltip
             .style("visibility", "visible")
             .html(`
@@ -128,13 +127,11 @@ d3.csv("NBA_Players.csv").then(data => {
             `);
         })
         .on("mousemove", function(event) {
-          // Position the tooltip near the cursor
           tooltip
             .style("top", `${event.pageY - 10}px`)
             .style("left", `${event.pageX + 10}px`);
         })
         .on("mouseout", function() {
-          // Hide the tooltip when not hovering
           tooltip.style("visibility", "hidden");
         });
 
