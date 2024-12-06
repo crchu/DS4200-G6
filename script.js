@@ -5,7 +5,7 @@ const height = 300 - margin.top - margin.bottom;
 const attributes = ['pts', 'reb', 'ast', 'gp'];
 const titles = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
 const yLabels = ["Average Points per Game", "Average Rebounds per Game", "Average Assists per Game", "Games Played"];
-const colors = ["steelblue", "orange", "green", "purple"]; 
+const colors = ["orange", "green", "steelblue", "purple"]; 
 
 const tooltip2 = d3.select("body").append("div")
         .attr("class", "tooltip2")
